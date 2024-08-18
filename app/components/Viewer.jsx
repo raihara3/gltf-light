@@ -3,7 +3,12 @@ import { memo, useRef, useEffect } from 'react';
 import { useRecoilState } from 'recoil';
 
 // states
-import { filePathState, animationsState, polygonCountState } from "../state/atoms/Upload3DModelAtom";
+import {
+  filePathState,
+  animationsState,
+  polygonCountState
+} from "../state/atoms/Upload3DModelAtom";
+import { currentSelectAnimationState } from "../state/atoms/CurrentSelect";
 
 // classes
 import GLTFModel from "../classes/GLTFModel";
@@ -17,11 +22,14 @@ const Viewer = () => {
   const [filePath, _] = useRecoilState(filePathState);
   const [animations, setAnimations] = useRecoilState(animationsState);
   const [polygonCount, setPolygonCount] = useRecoilState(polygonCountState);
+  const [currentSelectAnimation, setCurrentSelectAnimation] = useRecoilState(currentSelectAnimationState);
 
   useEffect(() => {
     if(!filePath) return;
     gltfModelRef.current.load(filePath).then(() => {
-      setAnimations(gltfModelRef.current.getAnimations());
+      const animations = gltfModelRef.current.getAnimations()
+      setAnimations(animations);
+      setCurrentSelectAnimation(animations[0]);
       setPolygonCount(gltfModelRef.current.getPolygonCount());
     })
   }, [filePath])
@@ -32,7 +40,7 @@ const Viewer = () => {
       src={filePath}
       camera-controls
       autoplay
-      animation-name={""}
+      animation-name={currentSelectAnimation}
       ar
       ar-modes="webxr scene-viewer"
       shadow-intensity="1"

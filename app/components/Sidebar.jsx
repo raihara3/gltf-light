@@ -4,6 +4,7 @@ import { useRecoilState } from 'recoil';
 
 // states
 import { animationsState, polygonCountState } from '../state/atoms/Upload3DModelAtom';
+import { currentSelectAnimationState } from '../state/atoms/CurrentSelect';
 import { upload3DModelSelector } from '../state/selectors/Upload3DModelSelector';
 
 // components
@@ -17,6 +18,7 @@ const Sidebar = () => {
   const [upload3DModel, setUpload3DModel] = useRecoilState(upload3DModelSelector);
   const [animations, setAnimations] = useRecoilState(animationsState);
   const [polygonCount, setPolygonCount] = useRecoilState(polygonCountState);
+  const [currentSelectAnimation, setCurrentSelectAnimation] = useRecoilState(currentSelectAnimationState);
 
   return (
     <aside>
@@ -52,7 +54,14 @@ const Sidebar = () => {
         <h3 className={commonStyles.menuTitle}>Animations</h3>
         {animations.map((animation, index) => (
           <label key={index} className={`${commonStyles.noteText} ${commonStyles.label}`}>
-            <input type="radio" name="animation" checked={index === 0} />{animation.name}
+            <input
+              type="radio"
+              name="animation"
+              onChange={() => {
+                setCurrentSelectAnimation(animation.name);
+              }}
+            />
+            {animation.name}
           </label>
         ))}
       </div>
