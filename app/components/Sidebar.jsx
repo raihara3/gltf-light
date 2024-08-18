@@ -1,9 +1,13 @@
+// lib
 import { memo } from 'react';
+
+// components
+import Uploader from './Uploader';
 
 const Sidebar = () => {
   return (
     <aside>
-      Sidebar
+      <Uploader />
     </aside>
   );
 }
