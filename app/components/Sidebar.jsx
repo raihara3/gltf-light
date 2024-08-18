@@ -8,7 +8,7 @@ import {
   polygonCountState,
   materialsState,
   texturesState,
-} from '../state/atoms/Upload3DModelAtom';
+ } from "../state/atoms/ModelInfo";
 import { currentSelectAnimationState } from '../state/atoms/CurrentSelect';
 import { upload3DModelSelector } from '../state/selectors/Upload3DModelSelector';
 

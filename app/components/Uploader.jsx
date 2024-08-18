@@ -1,22 +1,40 @@
 "use client";
 
 // lib
-import { memo, useRef, useCallback } from 'react';
-import { useSetRecoilState } from 'recoil';
+import { memo, useRef, useCallback, useEffect } from 'react';
+import { useSetRecoilState, useRecoilState } from 'recoil';
 
 // stores
+import { filePathState } from "../state/atoms/Upload3DModelAtom";
+import {
+  animationsState,
+  polygonCountState,
+  materialsState,
+  texturesState,
+} from "../state/atoms/ModelInfo";
 import { upload3DModelSelector } from "../state/selectors/Upload3DModelSelector";
+import { currentSelectAnimationState } from "../state/atoms/CurrentSelect";
 
 // models
 import Upload3DModel from "../models/Upload3DModel";
+
+// classes
+import GLTFModel from "../classes/GLTFModel";
 
 // styles
 import styles from "../styles/components/uploader.module.scss";
 
 const Uploader = () => {
   const upload3DModelRef = useRef(new Upload3DModel());
+  const gltfModelRef = useRef(new GLTFModel());
 
+  const [filePath, _] = useRecoilState(filePathState);
   const setUpload3DModelSelector = useSetRecoilState(upload3DModelSelector);
+  const [animations, setAnimations] = useRecoilState(animationsState);
+  const [polygonCount, setPolygonCount] = useRecoilState(polygonCountState);
+  const [currentSelectAnimation, setCurrentSelectAnimation] = useRecoilState(currentSelectAnimationState);
+  const [materials, setMaterials] = useRecoilState(materialsState);
+  const [textures, setTextures] = useRecoilState(texturesState);
 
   const onChangeFile = useCallback((file) => {
     upload3DModelRef.current.setFile(file);
@@ -26,6 +44,18 @@ const Uploader = () => {
       fileSize: upload3DModelRef.current.fileSize,
     })
   }, [])
+
+  useEffect(() => {
+    if(!filePath) return;
+    gltfModelRef.current.load(filePath).then(() => {
+      const animations = gltfModelRef.current.getAnimations()
+      setAnimations(animations);
+      setCurrentSelectAnimation(animations[0]);
+      setPolygonCount(gltfModelRef.current.getPolygonCount());
+      setMaterials(gltfModelRef.current.getMaterials())
+      setTextures(gltfModelRef.current.getTextures())
+    })
+  }, [filePath])
 
   return (
     <div>
