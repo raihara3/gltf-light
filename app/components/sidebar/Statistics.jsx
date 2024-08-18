@@ -20,7 +20,7 @@ const Statistics = () => {
         <Fragment>
           <TwoColumn
             left="Name:"
-            right={upload3DModel.name}
+            right={<div class="text-overflow">{upload3DModel.name}</div>}
             className="note"
           />
           <TwoColumn
