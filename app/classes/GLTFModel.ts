@@ -1,7 +1,7 @@
 // lib
 // import * as THREE from "three";
 import { GLTFLoader, GLTF } from "three/examples/jsm/Addons.js";
-import { AnimationClip } from "three";
+import { AnimationClip, Material } from "three";
 
 class GLTFModel {
   private filePath: string;
@@ -43,6 +43,23 @@ class GLTFModel {
       }
     });
     return polygonCount;
+  }
+
+  getMaterials() {
+    if (!this.model) return [];
+
+    const materials: Material[] = [];
+    this.model.scene.traverse((child: any) => {
+      if (!child.material) return;
+      if (Array.isArray(child.material)) {
+        materials.push(...child.material.filter((mat: Material) => !materials.includes(mat)));
+      } else {
+        if (!materials.includes(child.material)) {
+          materials.push(child.material);
+        }
+      }
+    });
+    return materials;
   }
 }
 

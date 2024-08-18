@@ -6,7 +6,8 @@ import { useRecoilState } from 'recoil';
 import {
   filePathState,
   animationsState,
-  polygonCountState
+  polygonCountState,
+  materialsState,
 } from "../state/atoms/Upload3DModelAtom";
 import { currentSelectAnimationState } from "../state/atoms/CurrentSelect";
 
@@ -23,6 +24,7 @@ const Viewer = () => {
   const [animations, setAnimations] = useRecoilState(animationsState);
   const [polygonCount, setPolygonCount] = useRecoilState(polygonCountState);
   const [currentSelectAnimation, setCurrentSelectAnimation] = useRecoilState(currentSelectAnimationState);
+  const [materials, setMaterials] = useRecoilState(materialsState);
 
   useEffect(() => {
     if(!filePath) return;
@@ -31,6 +33,7 @@ const Viewer = () => {
       setAnimations(animations);
       setCurrentSelectAnimation(animations[0]);
       setPolygonCount(gltfModelRef.current.getPolygonCount());
+      setMaterials(gltfModelRef.current.getMaterials())
     })
   }, [filePath])
 

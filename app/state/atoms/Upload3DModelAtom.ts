@@ -1,6 +1,6 @@
 // lib
 import { atom } from "recoil";
-import { AnimationClip } from "three";
+import { AnimationClip, Material } from "three";
 
 import Upload3DModel from "../../models/Upload3DModel";
 
@@ -28,3 +28,8 @@ export const polygonCountState = atom<number>({
   key: "polygonCount",
   default: 0,
 });
+
+export const materialsState = atom<Material[]>({
+  key: "materials",
+  default: [],
+})

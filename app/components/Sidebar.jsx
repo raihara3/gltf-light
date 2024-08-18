@@ -3,7 +3,11 @@ import { Fragment, memo } from 'react';
 import { useRecoilState } from 'recoil';
 
 // states
-import { animationsState, polygonCountState } from '../state/atoms/Upload3DModelAtom';
+import {
+  animationsState,
+  polygonCountState,
+  materialsState,
+} from '../state/atoms/Upload3DModelAtom';
 import { currentSelectAnimationState } from '../state/atoms/CurrentSelect';
 import { upload3DModelSelector } from '../state/selectors/Upload3DModelSelector';
 
@@ -19,6 +23,7 @@ const Sidebar = () => {
   const [animations, setAnimations] = useRecoilState(animationsState);
   const [polygonCount, setPolygonCount] = useRecoilState(polygonCountState);
   const [currentSelectAnimation, setCurrentSelectAnimation] = useRecoilState(currentSelectAnimationState);
+  const [materials, setMaterials] = useRecoilState(materialsState);
 
   return (
     <aside>
@@ -63,6 +68,15 @@ const Sidebar = () => {
             />
             {animation.name}
           </label>
+        ))}
+      </div>
+
+      <div>
+        <h3 className={commonStyles.menuTitle}>Materials</h3>
+        {materials.map((material, index) => (
+          <div key={index} className={commonStyles.noteText}>
+            {material.name}
+          </div>
         ))}
       </div>
     </aside>
