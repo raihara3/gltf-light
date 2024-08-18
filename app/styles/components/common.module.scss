@@ -26,3 +26,9 @@
     margin-right: 5px;
   }
 }
+
+.textOverflow {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

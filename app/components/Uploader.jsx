@@ -40,7 +40,8 @@ const Uploader = () => {
           onChangeFile(file);
         }}
       >
-        Upload glb
+        Upload 3D model<br/>
+        ( glb )
         <input
           type="file"
           accept=".glb"

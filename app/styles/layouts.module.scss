@@ -1,5 +1,13 @@
 @import './variables';
 
+.sidebar {
+  overflow-y: auto;
+  overflow-x: hidden;
+  &::-webkit-scrollbar{
+    display: none;
+  }
+}
+
 .layoutTwoColumn {
   display: grid;
   gap: 10px;

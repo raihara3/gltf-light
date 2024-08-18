@@ -18,7 +18,7 @@ export default function Home() {
     <RecoilRoot>
       <Header />
       <main className={`${layoutStyles.layoutTwoColumn} ${commonStyles.border}`}>
-        <div className={layoutStyles.layoutColumnLeft}>
+        <div className={`${layoutStyles.sidebar} ${layoutStyles.layoutColumnLeft}`}>
           <Sidebar />
         </div>
         <div>

@@ -7,6 +7,7 @@ import {
   animationsState,
   polygonCountState,
   materialsState,
+  texturesState,
 } from '../state/atoms/Upload3DModelAtom';
 import { currentSelectAnimationState } from '../state/atoms/CurrentSelect';
 import { upload3DModelSelector } from '../state/selectors/Upload3DModelSelector';
@@ -24,6 +25,8 @@ const Sidebar = () => {
   const [polygonCount, setPolygonCount] = useRecoilState(polygonCountState);
   const [currentSelectAnimation, setCurrentSelectAnimation] = useRecoilState(currentSelectAnimationState);
   const [materials, setMaterials] = useRecoilState(materialsState);
+  const [textures, setTextures] = useRecoilState(texturesState);
+  console.log(textures)
 
   return (
     <aside>
@@ -35,7 +38,7 @@ const Sidebar = () => {
           <Fragment>
             <div className={layoutStyles.layoutTwoColumn}>
               <div className={commonStyles.noteText}>Name:</div>
-              <div className={commonStyles.noteText}>
+              <div className={`${commonStyles.noteText} ${commonStyles.textOverflow}`}>
                 {upload3DModel.name}
               </div>
             </div>
@@ -56,9 +59,9 @@ const Sidebar = () => {
       </div>
 
       <div>
-        <h3 className={commonStyles.menuTitle}>Animations</h3>
+        <h3 className={commonStyles.menuTitle}>Animations ({animations.length})</h3>
         {animations.map((animation, index) => (
-          <label key={index} className={`${commonStyles.noteText} ${commonStyles.label}`}>
+          <label key={index} className={`${commonStyles.noteText} ${commonStyles.label} ${commonStyles.textOverflow}`}>
             <input
               type="radio"
               name="animation"
@@ -72,10 +75,25 @@ const Sidebar = () => {
       </div>
 
       <div>
-        <h3 className={commonStyles.menuTitle}>Materials</h3>
+        <h3 className={commonStyles.menuTitle}>Materials ({materials.length})</h3>
         {materials.map((material, index) => (
-          <div key={index} className={commonStyles.noteText}>
+          <div key={index} className={`${commonStyles.noteText} ${commonStyles.textOverflow}`}>
             {material.name}
+          </div>
+        ))}
+      </div>
+
+      <div>
+        <h3 className={commonStyles.menuTitle}>Textures ({textures.length})</h3>
+        {textures.map((texture, index) => (
+          <div key={index} className={layoutStyles.layoutTwoColumn}>
+            <div>
+              <img src={texture.src} style={{width: "100%"}}/>
+            </div>
+            <div className={`${commonStyles.noteText} ${commonStyles.textOverflow}`}>
+              {texture.name}<br />
+              w{texture.width}px / h{texture.height}px
+            </div>
           </div>
         ))}
       </div>
