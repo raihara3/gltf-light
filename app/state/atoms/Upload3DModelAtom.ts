@@ -23,3 +23,8 @@ export const animationsState = atom<AnimationClip[]>({
   key: "animations",
   default: [],
 });
+
+export const polygonCountState = atom<number>({
+  key: "polygonCount",
+  default: 0,
+});

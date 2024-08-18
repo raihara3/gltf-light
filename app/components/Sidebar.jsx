@@ -3,7 +3,7 @@ import { Fragment, memo } from 'react';
 import { useRecoilState } from 'recoil';
 
 // states
-import { animationsState } from '../state/atoms/Upload3DModelAtom';
+import { animationsState, polygonCountState } from '../state/atoms/Upload3DModelAtom';
 import { upload3DModelSelector } from '../state/selectors/Upload3DModelSelector';
 
 // components
@@ -16,6 +16,7 @@ import layoutStyles from "../styles/layouts.module.scss";
 const Sidebar = () => {
   const [upload3DModel, setUpload3DModel] = useRecoilState(upload3DModelSelector);
   const [animations, setAnimations] = useRecoilState(animationsState);
+  const [polygonCount, setPolygonCount] = useRecoilState(polygonCountState);
 
   return (
     <aside>
@@ -35,6 +36,12 @@ const Sidebar = () => {
               <div className={commonStyles.noteText}>Size:</div>
               <div className={commonStyles.noteText}>
                 {upload3DModel.fileSize}
+              </div>
+            </div>
+            <div className={layoutStyles.layoutTwoColumn}>
+              <div className={commonStyles.noteText}>Polygon:</div>
+              <div className={commonStyles.noteText}>
+                {polygonCount.toLocaleString()}
               </div>
             </div>
           </Fragment>

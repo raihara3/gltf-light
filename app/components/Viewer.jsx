@@ -3,7 +3,7 @@ import { memo, useRef, useEffect } from 'react';
 import { useRecoilState } from 'recoil';
 
 // states
-import { filePathState, animationsState } from "../state/atoms/Upload3DModelAtom";
+import { filePathState, animationsState, polygonCountState } from "../state/atoms/Upload3DModelAtom";
 
 // classes
 import GLTFModel from "../classes/GLTFModel";
@@ -16,11 +16,13 @@ const Viewer = () => {
 
   const [filePath, _] = useRecoilState(filePathState);
   const [animations, setAnimations] = useRecoilState(animationsState);
+  const [polygonCount, setPolygonCount] = useRecoilState(polygonCountState);
 
   useEffect(() => {
     if(!filePath) return;
     gltfModelRef.current.load(filePath).then(() => {
       setAnimations(gltfModelRef.current.getAnimations());
+      setPolygonCount(gltfModelRef.current.getPolygonCount());
     })
   }, [filePath])
 
