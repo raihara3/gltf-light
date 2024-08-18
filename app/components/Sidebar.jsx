@@ -3,6 +3,7 @@ import { memo } from 'react';
 import { useRecoilState } from 'recoil';
 
 // states
+import { animationsState } from '../state/atoms/Upload3DModelAtom';
 import { upload3DModelSelector } from '../state/selectors/Upload3DModelSelector';
 
 // components
@@ -13,7 +14,8 @@ import commonStyles from "../styles/components/common.module.scss";
 import layoutStyles from "../styles/layouts.module.scss";
 
 const Sidebar = () => {
-  const [upload3DModel, _] = useRecoilState(upload3DModelSelector);
+  const [upload3DModel, setUpload3DModel] = useRecoilState(upload3DModelSelector);
+  const [animations, setAnimations] = useRecoilState(animationsState);
 
   return (
     <aside>
@@ -33,6 +35,15 @@ const Sidebar = () => {
             {upload3DModel.fileSize}
           </div>
         </div>
+      </div>
+
+      <div>
+        <h3 className={commonStyles.menuTitle}>Animations</h3>
+        {animations.map((animation, index) => (
+          <div key={index} className={commonStyles.noteText}>
+            {animation.name}
+          </div>
+        ))}
       </div>
     </aside>
   );

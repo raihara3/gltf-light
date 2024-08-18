@@ -1,4 +1,6 @@
+// lib
 import { atom } from "recoil";
+import { AnimationClip } from "three";
 
 import Upload3DModel from "../../models/Upload3DModel";
 
@@ -15,4 +17,9 @@ export const filePathState = atom<Upload3DModel["filePath"]>({
 export const fileSizeState = atom<Upload3DModel["fileSize"]>({
   key: "fileSize",
   default: "",
+});
+
+export const animationsState = atom<AnimationClip[]>({
+  key: "animations",
+  default: [],
 });
