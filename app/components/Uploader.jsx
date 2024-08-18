@@ -2,7 +2,7 @@
 
 // lib
 import { memo, useRef, useCallback, useEffect } from 'react';
-import { useSetRecoilState, useRecoilState } from 'recoil';
+import { useSetRecoilState, useRecoilValue } from 'recoil';
 
 // stores
 import { filePathState } from "../state/atoms/Upload3DModelAtom";
@@ -28,13 +28,13 @@ const Uploader = () => {
   const upload3DModelRef = useRef(new Upload3DModel());
   const gltfModelRef = useRef(new GLTFModel());
 
-  const [filePath, _] = useRecoilState(filePathState);
+  const filePath = useRecoilValue(filePathState);
   const setUpload3DModelSelector = useSetRecoilState(upload3DModelSelector);
-  const [animations, setAnimations] = useRecoilState(animationsState);
-  const [polygonCount, setPolygonCount] = useRecoilState(polygonCountState);
-  const [currentSelectAnimation, setCurrentSelectAnimation] = useRecoilState(currentSelectAnimationState);
-  const [materials, setMaterials] = useRecoilState(materialsState);
-  const [textures, setTextures] = useRecoilState(texturesState);
+  const setAnimations = useSetRecoilState(animationsState);
+  const setPolygonCount = useSetRecoilState(polygonCountState);
+  const setCurrentSelectAnimation = useSetRecoilState(currentSelectAnimationState);
+  const setMaterials = useSetRecoilState(materialsState);
+  const setTextures = useSetRecoilState(texturesState);
 
   const onChangeFile = useCallback((file) => {
     upload3DModelRef.current.setFile(file);
@@ -47,6 +47,7 @@ const Uploader = () => {
 
   useEffect(() => {
     if(!filePath) return;
+
     gltfModelRef.current.load(filePath).then(() => {
       const animations = gltfModelRef.current.getAnimations()
       setAnimations(animations);
