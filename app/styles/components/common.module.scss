@@ -1,0 +1,20 @@
+@import "../variables";
+
+.menuTitle {
+  margin-bottom: 10px;
+  padding-bottom: 5px;
+  border-bottom: solid 1px $blue;
+  font-size: 16px;
+  color: $white;
+}
+
+.border {
+  border: solid 2px $blue;
+  padding: 10px;
+}
+
+.noteText {
+  color: $blue;
+  font-weight: bold;
+  line-height: 1.3rem;
+}
