@@ -1,5 +1,5 @@
 // lib
-import { memo } from 'react';
+import { Fragment, memo } from 'react';
 import { useRecoilState } from 'recoil';
 
 // states
@@ -23,26 +23,30 @@ const Sidebar = () => {
 
       <div>
         <h3 className={commonStyles.menuTitle}>Statistics</h3>
-        <div className={layoutStyles.layoutTwoColumn}>
-          <div className={commonStyles.noteText}>Name:</div>
-          <div className={commonStyles.noteText}>
-            {upload3DModel.name}
-          </div>
-        </div>
-        <div className={layoutStyles.layoutTwoColumn}>
-          <div className={commonStyles.noteText}>Size:</div>
-          <div className={commonStyles.noteText}>
-            {upload3DModel.fileSize}
-          </div>
-        </div>
+        {upload3DModel.filePath && (
+          <Fragment>
+            <div className={layoutStyles.layoutTwoColumn}>
+              <div className={commonStyles.noteText}>Name:</div>
+              <div className={commonStyles.noteText}>
+                {upload3DModel.name}
+              </div>
+            </div>
+            <div className={layoutStyles.layoutTwoColumn}>
+              <div className={commonStyles.noteText}>Size:</div>
+              <div className={commonStyles.noteText}>
+                {upload3DModel.fileSize}
+              </div>
+            </div>
+          </Fragment>
+        )}
       </div>
 
       <div>
         <h3 className={commonStyles.menuTitle}>Animations</h3>
         {animations.map((animation, index) => (
-          <div key={index} className={commonStyles.noteText}>
-            {animation.name}
-          </div>
+          <label key={index} className={`${commonStyles.noteText} ${commonStyles.label}`}>
+            <input type="radio" name="animation" checked={index === 0} />{animation.name}
+          </label>
         ))}
       </div>
     </aside>

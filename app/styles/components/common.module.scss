@@ -18,3 +18,11 @@
   font-weight: bold;
   line-height: 1.3rem;
 }
+
+.label {
+  display: block;
+
+  input[type="radio"] {
+    margin-right: 5px;
+  }
+}
