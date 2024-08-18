@@ -8,6 +8,7 @@ const Header = () => {
   return (
     <header className={styles.header}>
       GLTF Light
+      <img src="/images/rocket.png" alt="rocket" width="30" height="30" />
     </header>
   )
 }
