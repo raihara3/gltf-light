@@ -21,3 +21,17 @@ label {
   border: solid 2px $blue;
   padding: 10px;
 }
+
+.title {
+  margin-bottom: 10px;
+  padding-bottom: 5px;
+  border-bottom: solid 1px $blue;
+  font-size: 16px;
+  color: $white;
+}
+
+.note {
+  color: $blue;
+  font-weight: bold;
+  line-height: 1.3rem;
+}

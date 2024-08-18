@@ -5,7 +5,6 @@ import { useRecoilValue, useSetRecoilState } from 'recoil';
 // states
 import {
   animationsState,
-  polygonCountState,
   materialsState,
   texturesState,
  } from "../state/atoms/ModelInfo";
@@ -13,8 +12,8 @@ import { currentSelectAnimationState } from '../state/atoms/CurrentSelect';
 import { upload3DModelSelector } from '../state/selectors/Upload3DModelSelector';
 
 // components
-import Uploader from './Uploader';
-import TwoColumn from "../layouts/TwoColumn"
+import Uploader from './sidebar/Uploader';
+import Statistics from "./sidebar/Statistics";
 
 // styles
 import commonStyles from "../styles/components/common.module.scss";
@@ -22,9 +21,7 @@ import layoutStyles from "../styles/layouts.module.scss";
 import styles from "../styles/components/sidebar.module.scss"
 
 const Sidebar = () => {
-  const upload3DModel = useRecoilValue(upload3DModelSelector);
   const animations = useRecoilValue(animationsState);
-  const polygonCount = useRecoilValue(polygonCountState);
   const materials = useRecoilValue(materialsState);
   const textures = useRecoilValue(texturesState);
   const setCurrentSelectAnimation = useSetRecoilState(currentSelectAnimationState);
@@ -33,31 +30,7 @@ const Sidebar = () => {
     <aside className={styles.sidebar}>
       <Uploader />
 
-      <div>
-        <h3 className={commonStyles.menuTitle}>Statistics</h3>
-        {upload3DModel.filePath && (
-          <Fragment>
-            <div className={layoutStyles.layoutTwoColumn}>
-              <div className={commonStyles.noteText}>Name:</div>
-              <div className={`${commonStyles.noteText} ${commonStyles.textOverflow}`}>
-                {upload3DModel.name}
-              </div>
-            </div>
-            <div className={layoutStyles.layoutTwoColumn}>
-              <div className={commonStyles.noteText}>Size:</div>
-              <div className={commonStyles.noteText}>
-                {upload3DModel.fileSize}
-              </div>
-            </div>
-            <div className={layoutStyles.layoutTwoColumn}>
-              <div className={commonStyles.noteText}>Polygon:</div>
-              <div className={commonStyles.noteText}>
-                {polygonCount.toLocaleString()}
-              </div>
-            </div>
-          </Fragment>
-        )}
-      </div>
+      <Statistics />
 
       <div>
         <h3 className={commonStyles.menuTitle}>Animations ({animations.length})</h3>

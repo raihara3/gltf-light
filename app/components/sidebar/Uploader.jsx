@@ -5,24 +5,24 @@ import { memo, useRef, useCallback, useEffect } from 'react';
 import { useSetRecoilState, useRecoilValue } from 'recoil';
 
 // stores
-import { filePathState } from "../state/atoms/Upload3DModelAtom";
+import { filePathState } from "../../state/atoms/Upload3DModelAtom";
 import {
   animationsState,
   polygonCountState,
   materialsState,
   texturesState,
-} from "../state/atoms/ModelInfo";
-import { upload3DModelSelector } from "../state/selectors/Upload3DModelSelector";
-import { currentSelectAnimationState } from "../state/atoms/CurrentSelect";
+} from "../../state/atoms/ModelInfo";
+import { upload3DModelSelector } from "../../state/selectors/Upload3DModelSelector";
+import { currentSelectAnimationState } from "../../state/atoms/CurrentSelect";
 
 // models
-import Upload3DModel from "../models/Upload3DModel";
+import Upload3DModel from "../../models/Upload3DModel";
 
 // classes
-import GLTFModel from "../classes/GLTFModel";
+import GLTFModel from "../../classes/GLTFModel";
 
 // styles
-import styles from "../styles/components/uploader.module.scss";
+import styles from "../../styles/components/uploader.module.scss";
 
 const Uploader = () => {
   const upload3DModelRef = useRef(new Upload3DModel());
