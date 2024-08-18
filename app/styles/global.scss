@@ -35,3 +35,9 @@ label {
   font-weight: bold;
   line-height: 1.3rem;
 }
+
+.text-overflow {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
