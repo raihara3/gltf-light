@@ -4,7 +4,6 @@ import { useRecoilValue } from 'recoil';
 
 // states
 import {
-  materialsState,
   texturesState,
  } from "../state/atoms/ModelInfo";
 
@@ -12,6 +11,7 @@ import {
 import Uploader from './sidebar/Uploader';
 import Statistics from "./sidebar/Statistics";
 import Animations from "./sidebar/Animations";
+import Materials from "./sidebar/Materials";
 
 // styles
 import commonStyles from "../styles/components/common.module.scss";
@@ -19,7 +19,6 @@ import layoutStyles from "../styles/layouts.module.scss";
 import styles from "../styles/components/sidebar.module.scss"
 
 const Sidebar = () => {
-  const materials = useRecoilValue(materialsState);
   const textures = useRecoilValue(texturesState);
 
   return (
@@ -28,15 +27,7 @@ const Sidebar = () => {
 
       <Statistics />
       <Animations />
-
-      <div>
-        <h3 className={commonStyles.menuTitle}>Materials ({materials.length})</h3>
-        {materials.map((material, index) => (
-          <div key={index} className={`${commonStyles.noteText} ${commonStyles.textOverflow}`}>
-            {material.name}
-          </div>
-        ))}
-      </div>
+      <Materials />
 
       <div>
         <h3 className={commonStyles.menuTitle}>Textures ({textures.length})</h3>
