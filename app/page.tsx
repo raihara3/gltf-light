@@ -1,5 +1,7 @@
-import { Fragment } from "react";
-import Image from "next/image";
+"use client";
+
+// lib
+import { RecoilRoot } from "recoil";
 
 // style
 import "./styles/global.scss";
@@ -11,7 +13,7 @@ import Sidebar from "./components/Sidebar";
 
 export default function Home() {
   return (
-    <Fragment>
+    <RecoilRoot>
       <Header />
       <main className={styles.layoutTwoColumn}>
         <div className={styles.layoutColumnLeft}>
@@ -21,6 +23,6 @@ export default function Home() {
           Uploader
         </div>
       </main>
-    </Fragment>
+    </RecoilRoot>
   );
 }

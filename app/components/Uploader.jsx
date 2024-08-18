@@ -2,6 +2,7 @@
 
 // lib
 import { memo, useRef, useCallback } from 'react';
+import { useRecoilState } from 'recoil';
 
 // styles
 import styles from "../styles/components/uploader.module.scss";
