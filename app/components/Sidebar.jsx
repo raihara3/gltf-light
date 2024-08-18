@@ -1,6 +1,6 @@
 // lib
 import { Fragment, memo } from 'react';
-import { useRecoilState } from 'recoil';
+import { useRecoilValue, useSetRecoilState } from 'recoil';
 
 // states
 import {
@@ -20,13 +20,12 @@ import commonStyles from "../styles/components/common.module.scss";
 import layoutStyles from "../styles/layouts.module.scss";
 
 const Sidebar = () => {
-  const [upload3DModel, setUpload3DModel] = useRecoilState(upload3DModelSelector);
-  const [animations, setAnimations] = useRecoilState(animationsState);
-  const [polygonCount, setPolygonCount] = useRecoilState(polygonCountState);
-  const [currentSelectAnimation, setCurrentSelectAnimation] = useRecoilState(currentSelectAnimationState);
-  const [materials, setMaterials] = useRecoilState(materialsState);
-  const [textures, setTextures] = useRecoilState(texturesState);
-  console.log(textures)
+  const upload3DModel = useRecoilValue(upload3DModelSelector);
+  const animations = useRecoilValue(animationsState);
+  const polygonCount = useRecoilValue(polygonCountState);
+  const materials = useRecoilValue(materialsState);
+  const textures = useRecoilValue(texturesState);
+  const setCurrentSelectAnimation = useSetRecoilState(currentSelectAnimationState);
 
   return (
     <aside>
