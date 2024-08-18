@@ -1,0 +1,8 @@
+@import "../variables";
+
+.layoutTwoColumn {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: 1fr 3fr;
+  box-sizing: border-box;
+}

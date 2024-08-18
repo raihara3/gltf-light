@@ -14,6 +14,7 @@ import { upload3DModelSelector } from '../state/selectors/Upload3DModelSelector'
 
 // components
 import Uploader from './Uploader';
+import TwoColumn from "../layouts/TwoColumn"
 
 // styles
 import commonStyles from "../styles/components/common.module.scss";
