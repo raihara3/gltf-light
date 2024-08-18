@@ -1,9 +1,11 @@
 import Image from "next/image";
-import styles from "./page.module.css";
+
+// style
+import "./styles/global.scss";
 
 export default function Home() {
   return (
-    <main className={styles.main}>
+    <main>
       GLTF Light
     </main>
   );
