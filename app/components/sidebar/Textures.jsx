@@ -16,6 +16,7 @@ const Textures = () => {
       <h3 className="title">Textures ({textures.length})</h3>
       {textures.map((texture, index) => (
         <TwoColumn
+          style={{ minHeight: "70px" }}
           key={index}
           left={<img src={texture.src} style={{width: "100%"}} />}
           right={
