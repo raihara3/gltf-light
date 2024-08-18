@@ -17,6 +17,7 @@ export default function Home() {
     <RecoilRoot>
       <Header />
       <TwoColumn
+        className="box-border wrapper"
         left={<Sidebar />}
         right={<Viewer />}
       />

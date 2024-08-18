@@ -19,6 +19,7 @@ import TwoColumn from "../layouts/TwoColumn"
 // styles
 import commonStyles from "../styles/components/common.module.scss";
 import layoutStyles from "../styles/layouts.module.scss";
+import styles from "../styles/components/sidebar.module.scss"
 
 const Sidebar = () => {
   const upload3DModel = useRecoilValue(upload3DModelSelector);
@@ -29,7 +30,7 @@ const Sidebar = () => {
   const setCurrentSelectAnimation = useSetRecoilState(currentSelectAnimationState);
 
   return (
-    <aside>
+    <aside className={styles.sidebar}>
       <Uploader />
 
       <div>
@@ -61,7 +62,7 @@ const Sidebar = () => {
       <div>
         <h3 className={commonStyles.menuTitle}>Animations ({animations.length})</h3>
         {animations.map((animation, index) => (
-          <label key={index} className={`${commonStyles.noteText} ${commonStyles.label} ${commonStyles.textOverflow}`}>
+          <label key={index} className={`${commonStyles.noteText} ${commonStyles.textOverflow}`}>
             <input
               type="radio"
               name="animation"

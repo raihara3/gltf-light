@@ -5,6 +5,19 @@ body {
   color: $white;
 }
 
-main {
+label {
+  display: block;
+
+  input[type="radio"] {
+    margin-right: 5px;
+  }
+}
+
+.wrapper {
   height: 94vh;
+}
+
+.box-border {
+  border: solid 2px $blue;
+  padding: 10px;
 }

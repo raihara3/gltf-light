@@ -8,23 +8,10 @@
   color: $white;
 }
 
-.border {
-  border: solid 2px $blue;
-  padding: 10px;
-}
-
 .noteText {
   color: $blue;
   font-weight: bold;
   line-height: 1.3rem;
-}
-
-.label {
-  display: block;
-
-  input[type="radio"] {
-    margin-right: 5px;
-  }
 }
 
 .textOverflow {

@@ -3,15 +3,14 @@ import { memo } from 'react';
 
 // styles
 import styles from "../styles/layouts/twoColumn.module.scss"
-import commonStyles from "../styles/components/common.module.scss"
 
-const TwoColumn = ({ left, right, leftClassName = "", rightClassName = "" }) => {
+const TwoColumn = ({ left, right, className = "" }) => {
   return (
-    <div className={styles.layoutTwoColumn}>
-      <div className={`${commonStyles.noteText} ${leftClassName}`}>
+    <div className={`${styles.layoutTwoColumn} ${className}`}>
+      <div className={styles.left}>
         {left}
       </div>
-      <div className={`${commonStyles.noteText} ${commonStyles.textOverflow} ${rightClassName}`}>
+      <div className={styles.right}>
         {right}
       </div>
     </div>
