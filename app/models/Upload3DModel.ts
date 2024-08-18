@@ -13,6 +13,10 @@ class Upload3DModel {
     if(!file) {
       throw new Error('File is required');
     }
+    if(this.isUnSupportedFileType(file.name)) {
+      throw new Error('Unsupported file type');
+      // TODO: アラートを表示する
+    }
 
     this.name = file.name;
     this.filePath = URL.createObjectURL(file);
@@ -28,6 +32,12 @@ class Upload3DModel {
     } else {
       return (size / 1024 / 1024).toFixed(1) + 'MB';
     }
+  }
+
+  private isUnSupportedFileType(fileName: string) {
+    const supportedFileTypes = ['glb', 'gltf'];
+    const extension = fileName.split('.').pop() || "";
+    return !supportedFileTypes.includes(extension);
   }
 }
 

@@ -16,11 +16,11 @@ import styles from "../styles/components/uploader.module.scss";
 const Uploader = () => {
   const upload3DModelRef = useRef(new Upload3DModel());
 
-  const setUpload3DModel = useSetRecoilState(upload3DModelSelector);
+  const setUpload3DModelSelector = useSetRecoilState(upload3DModelSelector);
 
   const onChangeFile = useCallback((file) => {
     upload3DModelRef.current.setFile(file);
-    setUpload3DModel({
+    setUpload3DModelSelector({
       name: upload3DModelRef.current.name,
       filePath: upload3DModelRef.current.filePath,
       fileSize: upload3DModelRef.current.fileSize,
