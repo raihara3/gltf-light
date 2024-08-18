@@ -2,21 +2,29 @@
 
 // lib
 import { memo, useRef, useCallback } from 'react';
-import { useRecoilState } from 'recoil';
+import { useSetRecoilState } from 'recoil';
 
-// styles
-import styles from "../styles/components/uploader.module.scss";
+// stores
+import { upload3DModelSelector } from "../state/selectors/Upload3DModelSelector";
 
 // models
 import Upload3DModel from "../models/Upload3DModel";
 
-const Uploader = () => {
+// styles
+import styles from "../styles/components/uploader.module.scss";
 
+const Uploader = () => {
   const upload3DModelRef = useRef(new Upload3DModel());
+
+  const setUpload3DModel = useSetRecoilState(upload3DModelSelector);
 
   const onChangeFile = useCallback((file) => {
     upload3DModelRef.current.setFile(file);
-    console.log(upload3DModelRef.current.fileSize)
+    setUpload3DModel({
+      name: upload3DModelRef.current.name,
+      filePath: upload3DModelRef.current.filePath,
+      fileSize: upload3DModelRef.current.fileSize,
+    })
   }, [])
 
   return (
