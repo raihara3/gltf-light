@@ -3,6 +3,9 @@
 import { GLTFLoader, GLTF } from "three/examples/jsm/Addons.js";
 import { AnimationClip, Material } from "three";
 
+// types
+import { Log } from "./Logger";
+
 // classes
 import ModelMaterial from "./Materials";
 import Polygon from "./Polygon";
@@ -63,9 +66,17 @@ class GLTFModel {
   }
 
   validate() {
-    this.modelMaterial.validate();
+    const logs = [] as Log[];
+    const materialLog = this.modelMaterial.validate();
+    if(materialLog.length > 0) {
+      logs.push(...materialLog);
+    }
+
+    this.modelMaterial.validate()
     this.polygon.validate();
     this.texture.validate();
+
+    return logs;
   }
 }
 

@@ -2,7 +2,7 @@
 
 // lib
 import { memo, useRef, useCallback, useEffect } from 'react';
-import { useSetRecoilState, useRecoilValue } from 'recoil';
+import { useSetRecoilState, useRecoilValue, useRecoilState } from 'recoil';
 
 // stores
 import { filePathState } from "../../state/atoms/Upload3DModelAtom";
@@ -12,6 +12,7 @@ import {
   materialsState,
   texturesState,
 } from "../../state/atoms/ModelInfo";
+import { logsState } from "../../state/atoms/Logs";
 import { upload3DModelSelector } from "../../state/selectors/Upload3DModelSelector";
 import { currentSelectAnimationState } from "../../state/atoms/CurrentSelect";
 
@@ -35,6 +36,7 @@ const Uploader = () => {
   const setCurrentSelectAnimation = useSetRecoilState(currentSelectAnimationState);
   const setMaterials = useSetRecoilState(materialsState);
   const setTextures = useSetRecoilState(texturesState);
+  const [logs, setLogs] = useRecoilState(logsState);
 
   const onChangeFile = useCallback((file) => {
     upload3DModelRef.current.setFile(file);
@@ -59,7 +61,7 @@ const Uploader = () => {
 
       setTextures(gltfModelRef.current.getTextures(materials))
 
-      gltfModelRef.current.validate();
+      setLogs(logs.concat(gltfModelRef.current.validate()))
     })
   }, [filePath])
 

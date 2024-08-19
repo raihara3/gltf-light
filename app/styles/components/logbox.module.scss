@@ -1,0 +1,28 @@
+@import "../variables";
+
+.logbox {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  padding: 10px;
+  background: $dark-blue;
+  border: solid 1px $light-blue;
+  color: $light-blue;
+  box-sizing: border-box;
+  opacity: 0.9;
+}
+
+.logboxTitle {
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.logboxText {
+  margin-top: 10px;
+  font-size: 14px;
+}
+
+.warning {
+  color: $yellow;
+}

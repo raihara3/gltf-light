@@ -1,5 +1,5 @@
 // lib
-import { memo } from 'react';
+import { memo, Fragment } from 'react';
 import { useRecoilValue } from 'recoil';
 
 // states
@@ -9,6 +9,7 @@ import {
 
 // component
 import Viewer from "../components/Viewer";
+import Logbox from "../components/Logbox";
 
 // styles
 import styles from "../styles/layouts/mainContent.module.scss"
@@ -19,7 +20,10 @@ const MainContent = () => {
   return (
     <div className={styles.wrap}>
       {filePath ? (
-        <Viewer />
+        <Fragment>
+          <Viewer />
+          <Logbox />
+        </Fragment>
       ) : (
         <div className={styles.innerBox}>
           This is lightweight service specialized in GLTF.<br />

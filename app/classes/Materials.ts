@@ -4,7 +4,7 @@ import { Material } from "three";
 import { LogType } from "./Logger";
 
 // classes
-import Logger from "./Logger";
+import Logger, { Log } from "./Logger";
 
 class ModelMaterial {
   materials: Material[];
@@ -33,15 +33,15 @@ class ModelMaterial {
     return materials;
   }
 
-  validate() {
+  validate(): Log[] {
     const RECOMENMDED_MATERIAL_COUNT = 5;
     if(this.materials.length > RECOMENMDED_MATERIAL_COUNT) {
-      return Logger.log({
+      return [Logger.log({
         logType: LogType.WARNING,
         message: `A little too much material. May affect performance.(Recommendation is under ${RECOMENMDED_MATERIAL_COUNT})`
-      });
+      })];
     }
-    return ""
+    return []
   }
 }
 
