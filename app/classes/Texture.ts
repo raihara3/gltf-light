@@ -62,8 +62,8 @@ class Texture {
   }
 
   async validate(): Promise<Log[]> {
-    const WARNING_SIZE = 1096;
-    const ERROR_SIZE = 2192;
+    const WARNING_SIZE = 4096;
+    const ERROR_SIZE = 8192;
 
     const logs = [] as Log[];
     await this.textures.forEach(texture => {
