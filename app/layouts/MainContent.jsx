@@ -10,6 +10,7 @@ import {
 // component
 import Viewer from "../components/Viewer";
 import Logbox from "../components/Logbox";
+import TextureResizeModal from "../components/TextureResizeModal";
 
 // styles
 import styles from "../styles/layouts/mainContent.module.scss"
@@ -23,6 +24,7 @@ const MainContent = () => {
         <Fragment>
           <Viewer />
           <Logbox />
+          <TextureResizeModal />
         </Fragment>
       ) : (
         <div className={styles.innerBox}>

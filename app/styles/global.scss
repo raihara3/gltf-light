@@ -31,6 +31,13 @@ label {
   color: $white;
 }
 
+.sub-title {
+  margin: 0;
+  margin-bottom: 5px;
+  font-size: 14px;
+  color: $white;
+}
+
 .note {
   color: $blue;
   font-weight: bold;
@@ -45,6 +52,9 @@ label {
 
 .button {
   border-radius: 5px;
+  background: none;
+  color: $white;
+  border: none;
   cursor: pointer;
   @include ease-animation;
   &:hover {

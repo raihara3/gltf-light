@@ -1,15 +1,17 @@
 // lib
 import { memo, Fragment } from 'react';
-import { useRecoilValue } from 'recoil';
+import { useRecoilValue, useSetRecoilState } from 'recoil';
 
 // states
 import { texturesState } from "../../state/atoms/ModelInfo";
+import { currentSelectTextureState } from "../../state/atoms/CurrentSelect";
 
 // components
 import TwoColumn from "../../layouts/TwoColumn";
 
 const Textures = () => {
   const textures = useRecoilValue(texturesState);
+  const currentSelectTexture = useSetRecoilState(currentSelectTextureState);
 
   return (
     <Fragment>
@@ -25,7 +27,20 @@ const Textures = () => {
               w{texture.width}px / h{texture.height}px<br />
               <div style={{ display: "flex", justifyContent: "space-between" }}>
                 <div>{texture.fileSize}</div>
-                {/* <button className="button button--normal">Resize</button> */}
+                {/* <button
+                  className="button button--normal"
+                  onClick={() => {
+                    currentSelectTexture({
+                      src: texture.src,
+                      name: texture.name,
+                      width: texture.width,
+                      height: texture.height,
+                      fileSize: texture.fileSize,
+                    })
+                  }}
+                >
+                  Resize
+                </button> */}
               </div>
             </div>
           }
