@@ -1,5 +1,5 @@
 // lib
-import { memo } from 'react';
+import { memo, useCallback, useRef } from 'react';
 import { useRecoilValue } from 'recoil';
 
 // states
@@ -15,8 +15,22 @@ const Viewer = () => {
   const filePath = useRecoilValue(filePathState);
   const currentSelectAnimation = useRecoilValue(currentSelectAnimationState);
 
+  const modelViewerRef = useRef(null);
+
+  // const onChangeTexture = useCallback(() => {
+  //   const viewer = modelViewerRef.current;
+  //   if(!viewer) return;
+  //   const scene = viewer.model;
+  //   console.log(scene)
+  //   if(!scene) return
+  //   console.log(scene.materials)
+  // }, [filePath])
+  // onChangeTexture()
+
   return (
     <model-viewer
+      id="viewer"
+      ref={modelViewerRef}
       class={styles.viewer}
       src={filePath}
       camera-controls

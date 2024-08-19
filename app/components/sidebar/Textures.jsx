@@ -27,14 +27,14 @@ const Textures = () => {
               w{texture.width}px / h{texture.height}px<br />
               <div style={{ display: "flex", justifyContent: "space-between" }}>
                 <div>{texture.fileSize}</div>
-                {/* <button
+                <button
                   className="button button--normal"
                   onClick={() => {
                     currentSelectTexture(texture)
                   }}
                 >
                   Resize
-                </button> */}
+                </button>
               </div>
             </div>
           }

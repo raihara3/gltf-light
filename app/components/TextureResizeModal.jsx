@@ -35,13 +35,12 @@ const TextureResizeModal = () => {
   }, [currentTexture])
 
   const onConfirm = useCallback(() => {
-    setTextures(textures.map(texture => {
-      if(texture.uuid === resizeTexture.uuid) {
-        return resizeTexture;
-      }
-      return texture;
-    }))
-    // TODO: 差し替え
+    // setTextures(textures.map(texture => {
+    //   if(texture.uuid === resizeTexture.uuid) {
+    //     return resizeTexture;
+    //   }
+    //   return texture;
+    // }))
     onClose();
   }, [textures, resizeTexture])
 
@@ -94,7 +93,10 @@ const TextureResizeModal = () => {
                 <h4 className={`sub-title`}>Resized info</h4>
                 <div>Size: w{resizeTexture.width}px / h{resizeTexture.height}px</div>
                 <div>File size: {resizeTexture.fileSize}</div>
-                <div style={{marginTop: "10px"}}>
+                <div className={styles.warning}>
+                  Texture replacement is not yet supported, so please download the image and replace it yourself.
+                </div>
+                {/* <div style={{marginTop: "10px"}}>
                   <button
                     className={`button button--light ${styles.confirmButton}`}
                     onClick={() => {
@@ -103,7 +105,7 @@ const TextureResizeModal = () => {
                   >
                     OK
                   </button>
-                </div>
+                </div> */}
               </div>
             )}
           </div>
