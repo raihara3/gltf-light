@@ -30,13 +30,7 @@ const Textures = () => {
                 {/* <button
                   className="button button--normal"
                   onClick={() => {
-                    currentSelectTexture({
-                      src: texture.src,
-                      name: texture.name,
-                      width: texture.width,
-                      height: texture.height,
-                      fileSize: texture.fileSize,
-                    })
+                    currentSelectTexture(texture)
                   }}
                 >
                   Resize

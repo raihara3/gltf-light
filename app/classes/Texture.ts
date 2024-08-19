@@ -7,6 +7,7 @@ import Logger from "./Logger";
 import FileSize from "../utils/FileSize";
 
 export interface TextureType {
+  uuid: string;
   src: string;
   name: string;
   width: number;
@@ -56,11 +57,12 @@ class Texture {
         if (uniqueUuIds.has(map.uuid)) return;
         uniqueUuIds.add(map.uuid);
         return {
+          uuid: map.uuid,
           src: imageSrc || "",
           name: map.name || "Not named",
           width: map.image.width || 0,
           height: map.image.height || 0,
-          fileSize: this.getFileSize(imageSrc),
+          fileSize: Texture.getFileSize(imageSrc),
         };
       }).filter(Boolean) as TextureType[];
     });
@@ -68,7 +70,7 @@ class Texture {
     return this.textures;
   }
 
-  private getFileSize(imageSrc: string) {
+  static getFileSize(imageSrc: string) {
     const base64String = imageSrc.split(',')[1];
     const sizeInBytes = (base64String.length * (3 / 4)) - ((base64String.indexOf('=') > 0) ? (base64String.length - base64String.indexOf('=')) : 0);
     return FileSize.formatFileSize(sizeInBytes);
