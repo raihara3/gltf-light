@@ -46,19 +46,6 @@ class GLTFModel {
     return [];
   }
 
-  getPolygonCount() {
-    if(!this.model) return 0;
-
-    let polygonCount = 0;
-    this.model.scene.traverse((child: any) => {
-      if (child.isMesh) {
-        const geometry = child.geometry;
-        polygonCount += geometry.index.count / 3;
-      }
-    });
-    return polygonCount;
-  }
-
   getMaterials() {
     if (!this.model) return [];
 

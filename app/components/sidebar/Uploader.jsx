@@ -21,6 +21,7 @@ import Upload3DModel from "../../models/Upload3DModel";
 // classes
 import GLTFModel from "../../classes/GLTFModel";
 import ModelMaterial from "../../classes/Materials";
+import Polygon from "../../classes/Polygon";
 
 // styles
 import styles from "../../styles/components/uploader.module.scss";
@@ -29,6 +30,7 @@ const Uploader = () => {
   const upload3DModelRef = useRef(new Upload3DModel());
   const gltfModelRef = useRef(new GLTFModel());
   const modelMaterialRef = useRef(new ModelMaterial());
+  const polygonRef = useRef(new Polygon());
 
   const filePath = useRecoilValue(filePathState);
   const setUpload3DModelSelector = useSetRecoilState(upload3DModelSelector);
@@ -54,7 +56,9 @@ const Uploader = () => {
       const animations = gltfModelRef.current.getAnimations()
       setAnimations(animations);
       setCurrentSelectAnimation(animations[0]);
-      setPolygonCount(gltfModelRef.current.getPolygonCount());
+
+      setPolygonCount(polygonRef.current.getPolygonCount(gltfModelRef.current.getModel()));
+      polygonRef.current.validate()
 
       setMaterials(modelMaterialRef.current.get(gltfModelRef.current.getModel()))
       modelMaterialRef.current.validate()
