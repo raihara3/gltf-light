@@ -2,11 +2,11 @@
 import { memo } from 'react';
 
 // components
-import Uploader from './sidebar/Uploader';
-import Statistics from "./sidebar/Statistics";
-import Animations from "./sidebar/Animations";
-import Materials from "./sidebar/Materials";
-import Textures from "./sidebar/Textures";
+import Uploader from '../components/sidebar/Uploader';
+import Statistics from "../components/sidebar/Statistics";
+import Animations from "../components/sidebar/Animations";
+import Materials from "../components/sidebar/Materials";
+import Textures from "../components/sidebar/Textures";
 
 // styles
 import styles from "../styles/components/sidebar.module.scss"
