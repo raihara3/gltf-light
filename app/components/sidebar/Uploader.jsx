@@ -61,7 +61,11 @@ const Uploader = () => {
 
       setTextures(gltfModelRef.current.getTextures(materials))
 
-      setLogs(logs.concat(gltfModelRef.current.validate()))
+      const getLog = async() => {
+        const validateLogs = await gltfModelRef.current.validate()
+        setLogs(logs.concat(validateLogs))
+      }
+      getLog();
     })
   }, [filePath])
 

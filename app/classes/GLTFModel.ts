@@ -65,16 +65,20 @@ class GLTFModel {
     return this.texture.get(materials);
   }
 
-  validate() {
+  async validate() {
     const logs = [] as Log[];
-    const materialLog = this.modelMaterial.validate();
-    if(materialLog.length > 0) {
-      logs.push(...materialLog);
+    const materialLogs = this.modelMaterial.validate();
+    if(materialLogs.length > 0) {
+      logs.push(...materialLogs);
     }
-
-    this.modelMaterial.validate()
-    this.polygon.validate();
-    this.texture.validate();
+    const polygonLog = this.polygon.validate();
+    if(polygonLog.length > 0) {
+      logs.push(...polygonLog);
+    }
+    const textureLogs = await this.texture.validate();
+    if(textureLogs.length > 0) {
+      logs.push(...textureLogs);
+    }
 
     return logs;
   }

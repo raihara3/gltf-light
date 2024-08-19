@@ -12,7 +12,7 @@
   border: solid 1px $light-blue;
   color: $light-blue;
   box-sizing: border-box;
-  opacity: 0.9;
+  opacity: 0.95;
 }
 
 .logboxTitle {
@@ -27,4 +27,8 @@
 
 .warning {
   color: $yellow;
+}
+
+.error {
+  color: $red;
 }

@@ -1,7 +1,7 @@
 // types
 import { GLTF } from "three/examples/jsm/Addons.js";
 import { Material } from "three";
-import { LogType } from "./Logger";
+import { LogType, Log } from "./Logger";
 
 // classes
 import Logger from "./Logger";
@@ -31,21 +31,21 @@ class Polygon {
     return polygonCount;
   }
 
-  validate() {
+  validate(): Log[] {
     const WARNING_COUNT = 100000;
     const ERROR_COUNT = 300000;
     if(this.polygonCount > WARNING_COUNT) {
-      return Logger.log({
+      return [Logger.log({
         logType: LogType.WARNING,
         message: `Too many polygons. It is recommended that unnecessary polygons be reduced.(Recommendation is under ${WARNING_COUNT.toLocaleString()})`
-      });
+      })];
     }else if(this.polygonCount > ERROR_COUNT) {
-      return Logger.log({
+      return [Logger.log({
         logType: LogType.ERROR,
         message: `Too much polygon. Will affect performance.(Recommendation is under ${ERROR_COUNT.toLocaleString()})`
-      });
+      })];
     }
-    return ""
+    return []
   }
 }
 
