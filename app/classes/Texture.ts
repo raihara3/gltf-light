@@ -24,7 +24,7 @@ class Texture {
       throw new Error("Materials are not loaded");
     }
 
-    const uniqueNames = new Set<string>();
+    const uniqueUuIds = new Set<string>();
     const canvas = document.createElement("canvas");
     const textures = materials.flatMap((material: any) => {
       return Array.from([
@@ -47,8 +47,8 @@ class Texture {
         const imageSrc = canvas.toDataURL();
         canvas.remove();
         const name = map.name || "Not named";
-        if (uniqueNames.has(name)) return;
-        uniqueNames.add(name);
+        if (uniqueUuIds.has(map.uuid)) return;
+        uniqueUuIds.add(map.uuid);
         return {
           src: imageSrc || "",
           name: name,
