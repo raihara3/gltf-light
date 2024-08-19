@@ -16,29 +16,39 @@ import TwoColumn from "../layouts/TwoColumn";
 import styles from "../styles/components/textureResize.module.scss"
 
 const TextureResizeModal = () => {
-  const currentSelectTexture = useRecoilValue(currentSelectTextureState);
+  const [currentTexture, setCurrentTexture] = useRecoilState(currentSelectTextureState);
   const [textures, setTextures] = useRecoilState(texturesState);
   const [isShow, setIsShow] = useState(false);
+  const [resizeTexture, setResizeTexture] = useState(null);
 
   const resizeTextureRef = useRef(new ResizeTexture());
 
-  const onResize = useCallback(async(size) => {
-    const resizedTexture = await resizeTextureRef.current.resize({ texture: currentSelectTexture, width: size });
-    console.log(resizedTexture)
-    // setTextures(textures.map(texture => {
-    //   if(texture.uuid === currentSelectTexture.uuid) {
-    //     return resizedTexture;
-    //   }
-    //   return texture;
-    // }))
-    // TODO: 差し替え確認
+  const onClose = useCallback(() => {
     setIsShow(false);
-  }, [currentSelectTexture])
+    setResizeTexture(null);
+    setCurrentTexture({});
+  }, [])
+
+  const onResize = useCallback(async(size) => {
+    const texture = await resizeTextureRef.current.resize({ texture: currentTexture, width: size });
+    setResizeTexture(texture)
+  }, [currentTexture])
+
+  const onConfirm = useCallback(() => {
+    setTextures(textures.map(texture => {
+      if(texture.uuid === resizeTexture.uuid) {
+        return resizeTexture;
+      }
+      return texture;
+    }))
+    // TODO: 差し替え
+    onClose();
+  }, [textures, resizeTexture])
 
   useEffect(() => {
-    if(!currentSelectTexture.src) return
+    if(!currentTexture.src) return
     setIsShow(true);
-  }, [currentSelectTexture])
+  }, [currentTexture])
 
   if(!isShow) return null;
 
@@ -49,7 +59,7 @@ const TextureResizeModal = () => {
         <button
           className={`button`}
           onClick={() => {
-            setIsShow(false);
+            onClose();
           }}
         >
           close
@@ -58,18 +68,18 @@ const TextureResizeModal = () => {
       <TwoColumn
         left={
           <div>
-            <img src={currentSelectTexture.src} style={{ width: "100%" }} />
+            <img src={(resizeTexture && resizeTexture.src) || currentTexture.src} style={{ width: "100%" }} />
           </div>
         }
         right={
           <div className={`note`}>
             <div style={{ marginBottom: "15px" }}>
               <h4 className={`sub-title`}>Current info</h4>
-              <div>Name: {currentSelectTexture.name}</div>
-              <div>Size: w{currentSelectTexture.width}px / h{currentSelectTexture.height}px</div>
-              <div>File size: {currentSelectTexture.fileSize}</div>
+              <div>Name: {currentTexture.name}</div>
+              <div>Size: w{currentTexture.width}px / h{currentTexture.height}px</div>
+              <div>File size: {currentTexture.fileSize}</div>
             </div>
-            <div>
+            <div style={{ marginBottom: "15px" }}>
               <h4 className={`sub-title`}>Select size</h4>
               <div className={styles.buttonsBox}>
                 <button className="button button--normal" onClick={() => onResize(256)}>256</button>
@@ -79,6 +89,23 @@ const TextureResizeModal = () => {
                 <button className="button button--normal" onClick={() => onResize(4096)}>4096</button>
               </div>
             </div>
+            {resizeTexture && (
+              <div>
+                <h4 className={`sub-title`}>Resized info</h4>
+                <div>Size: w{resizeTexture.width}px / h{resizeTexture.height}px</div>
+                <div>File size: {resizeTexture.fileSize}</div>
+                <div style={{marginTop: "10px"}}>
+                  <button
+                    className={`button button--light ${styles.confirmButton}`}
+                    onClick={() => {
+                      onConfirm();
+                    }}
+                  >
+                    OK
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         }
       />
