@@ -48,7 +48,9 @@ class Texture {
         if (!ctx2d) return;
         ctx2d.drawImage(map.image, 0, 0);
 
-        const imageSrc = canvas.toDataURL();
+        const imageData = ctx2d.getImageData(0, 0, 1, 1).data;
+        const isAlpha = imageData[3] < 255 ? true : false;
+        const imageSrc = canvas.toDataURL(isAlpha ? "image/png" : "image/jpeg");
         canvas.remove();
 
         if (uniqueUuIds.has(map.uuid)) return;
@@ -66,7 +68,7 @@ class Texture {
     return this.textures;
   }
 
-  getFileSize(imageSrc: string) {
+  private getFileSize(imageSrc: string) {
     const base64String = imageSrc.split(',')[1];
     const sizeInBytes = (base64String.length * (3 / 4)) - ((base64String.indexOf('=') > 0) ? (base64String.length - base64String.indexOf('=')) : 0);
     return FileSize.formatFileSize(sizeInBytes);

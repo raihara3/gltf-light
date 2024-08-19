@@ -23,7 +23,10 @@ const Textures = () => {
             <div className="note text-overflow">
               {texture.name}<br />
               w{texture.width}px / h{texture.height}px<br />
-              {texture.fileSize}
+              <div style={{ display: "flex", justifyContent: "space-between" }}>
+                <div>{texture.fileSize}</div>
+                {/* <button className="button button--normal">Resize</button> */}
+              </div>
             </div>
           }
         />
