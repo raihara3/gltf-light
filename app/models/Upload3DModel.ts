@@ -1,3 +1,5 @@
+import FileSize from "../utils/FileSize";
+
 class Upload3DModel {
   public name: string;
   public filePath: string;
@@ -25,15 +27,7 @@ class Upload3DModel {
 
   private getFileSize(file: File) {
     const size = file.size;
-    if (size < 1024) {
-      return size + 'B';
-    } else if (size < 1024 * 1024) {
-      return (size / 1024).toFixed(1) + 'KB';
-    } else if (size < 1024 * 1024 * 1024) {
-      return (size / 1024 / 1024).toFixed(1) + 'MB';
-    } else {
-      return (size / 1024 / 1024 / 1024).toFixed(1) + 'GB';
-    }
+    return FileSize.formatFileSize(size);
   }
 
   private isUnSupportedFileType(fileName: string) {

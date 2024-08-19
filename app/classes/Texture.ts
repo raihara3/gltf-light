@@ -4,12 +4,14 @@ import { LogType, Log } from "./Logger";
 
 // classes
 import Logger from "./Logger";
+import FileSize from "../utils/FileSize";
 
 export interface TextureType {
   src: string;
   name: string;
   width: number;
   height: number;
+  fileSize: string;
 }
 
 class Texture {
@@ -41,24 +43,33 @@ class Texture {
         if (!map) return;
         canvas.width = map.image.width;
         canvas.height = map.image.height;
+
         const ctx2d = canvas.getContext("2d");
         if (!ctx2d) return;
         ctx2d.drawImage(map.image, 0, 0);
+
         const imageSrc = canvas.toDataURL();
         canvas.remove();
-        const name = map.name || "Not named";
+
         if (uniqueUuIds.has(map.uuid)) return;
         uniqueUuIds.add(map.uuid);
         return {
           src: imageSrc || "",
-          name: name,
+          name: map.name || "Not named",
           width: map.image.width || 0,
           height: map.image.height || 0,
+          fileSize: this.getFileSize(imageSrc),
         };
       }).filter(Boolean) as TextureType[];
     });
     this.textures = textures;
     return this.textures;
+  }
+
+  getFileSize(imageSrc: string) {
+    const base64String = imageSrc.split(',')[1];
+    const sizeInBytes = (base64String.length * (3 / 4)) - ((base64String.indexOf('=') > 0) ? (base64String.length - base64String.indexOf('=')) : 0);
+    return FileSize.formatFileSize(sizeInBytes);
   }
 
   async validate(): Promise<Log[]> {

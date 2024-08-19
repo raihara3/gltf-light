@@ -22,7 +22,8 @@ const Textures = () => {
           right={
             <div className="note text-overflow">
               {texture.name}<br />
-              w{texture.width}px / h{texture.height}px
+              w{texture.width}px / h{texture.height}px<br />
+              {texture.fileSize}
             </div>
           }
         />
