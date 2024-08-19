@@ -1,27 +1,17 @@
 // lib
 // import * as THREE from "three";
 import { GLTFLoader, GLTF } from "three/examples/jsm/Addons.js";
-import { AnimationClip, Material } from "three";
-
-// TODO: テクスチャ関連は別クラスに分ける
-export interface TextureType {
-  src: string;
-  name: string;
-  width: number;
-  height: number;
-}
+import { AnimationClip } from "three";
 
 class GLTFModel {
   private filePath: string;
   private loader: GLTFLoader;
   private model: GLTF | null;
-  private materials: Material[];
 
   constructor() {
     this.filePath = "";
     this.loader = new GLTFLoader();
     this.model = null
-    this.materials = [];
   }
 
   getModel() {

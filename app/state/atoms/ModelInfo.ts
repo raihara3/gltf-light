@@ -3,7 +3,7 @@ import { atom } from "recoil";
 
 // types
 import { AnimationClip, Material } from "three";
-import { TextureType } from "../../classes/GLTFModel";
+import { TextureType } from "../../classes/Texture";
 
 export const animationsState = atom<AnimationClip[]>({
   key: "animations",
