@@ -62,20 +62,20 @@ class Texture {
   }
 
   async validate(): Promise<Log[]> {
-    const WARNING_SIZE = 4096;
-    const ERROR_SIZE = 8192;
+    const WARNING_SIZE = 1096;
+    const ERROR_SIZE = 2192;
 
     const logs = [] as Log[];
     await this.textures.forEach(texture => {
-      if(texture.width > WARNING_SIZE || texture.height > WARNING_SIZE) {
-        logs.push(Logger.log({
-          logType: LogType.WARNING,
-          message: `${texture.name} texture size is a little large. May affect performance.(Recommendation is under ${WARNING_SIZE.toLocaleString()}px)`
-        }));
-      }else if(texture.width >= ERROR_SIZE || texture.height >= ERROR_SIZE) {
+      if(texture.width >= ERROR_SIZE || texture.height >= ERROR_SIZE) {
         logs.push(Logger.log({
           logType: LogType.ERROR,
           message: `${texture.name} texture size is too large. More than ${ERROR_SIZE.toLocaleString()}px may cause safari to crash.(Recommendation is under ${WARNING_SIZE.toLocaleString()}px)`
+        }));
+      }else if(texture.width > WARNING_SIZE || texture.height > WARNING_SIZE) {
+        logs.push(Logger.log({
+          logType: LogType.WARNING,
+          message: `${texture.name} texture size is a little large. May affect performance.(Recommendation is under ${WARNING_SIZE.toLocaleString()}px)`
         }));
       }
     })

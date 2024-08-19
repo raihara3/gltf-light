@@ -21,6 +21,7 @@ import Upload3DModel from "../../models/Upload3DModel";
 
 // classes
 import GLTFModel from "../../classes/GLTFModel";
+import Logger, { LogType } from "../../classes/Logger";
 
 // styles
 import styles from "../../styles/components/uploader.module.scss";
@@ -62,8 +63,12 @@ const Uploader = () => {
       setTextures(gltfModelRef.current.getTextures(materials))
 
       const getLog = async() => {
+        const uploadLog = Logger.log({
+          logType: LogType.INFO,
+          message: `${upload3DModelRef.current.name} upload.`
+        })
         const validateLogs = await gltfModelRef.current.validate()
-        setLogs(logs.concat(validateLogs))
+        setLogs(logs.concat([uploadLog], validateLogs))
       }
       getLog();
     })
