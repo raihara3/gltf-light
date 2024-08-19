@@ -24,6 +24,10 @@ class GLTFModel {
     this.materials = [];
   }
 
+  getModel() {
+    return this.model;
+  }
+
   load(filePath: string) {
     this.filePath = filePath;
     return new Promise((resolve, reject) => {
