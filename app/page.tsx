@@ -2,6 +2,7 @@
 
 // lib
 import { RecoilRoot } from "recoil";
+import { Analytics } from "@vercel/analytics/react"
 
 // style
 import "./styles/global.scss";
@@ -21,6 +22,7 @@ export default function Home() {
         left={<Sidebar />}
         right={<MainContent />}
       />
+      <Analytics />
     </RecoilRoot>
   );
 }
