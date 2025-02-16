@@ -2,7 +2,7 @@
 
 // lib
 import { RecoilRoot } from "recoil";
-import { Analytics } from "@vercel/analytics/react"
+import { Analytics } from "@vercel/analytics/react";
 
 // style
 import "./styles/global.scss";
