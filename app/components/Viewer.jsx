@@ -1,6 +1,13 @@
 // lib
-import { Fragment, memo, useCallback, useEffect, useRef } from "react";
-import { useRecoilValue } from "recoil";
+import {
+  Fragment,
+  memo,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
+import { useRecoilValue, useSetRecoilState } from "recoil";
 
 // states
 import { filePathState } from "../state/atoms/Upload3DModelAtom";
@@ -11,10 +18,13 @@ import styles from "../styles/components/viewer.module.scss";
 
 const Viewer = ({ currentResizeTexture }) => {
   const filePath = useRecoilValue(filePathState);
+  const setFilePath = useSetRecoilState(filePathState);
   const currentSelectAnimation = useRecoilValue(currentSelectAnimationState);
+  const [isDragging, setIsDragging] = useState(false);
 
   const modelViewerRef = useRef(null);
   const materials = useRef([]);
+  const viewerContainerRef = useRef(null);
 
   useEffect(() => {
     const modelViewer = document.querySelector("model-viewer#viewer");
@@ -50,23 +60,75 @@ const Viewer = ({ currentResizeTexture }) => {
     download();
   }, []);
 
+  const handleDragOver = useCallback((e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  }, []);
+
+  const handleDragLeave = useCallback((e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+  }, []);
+
+  const handleDrop = useCallback(
+    (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      setIsDragging(false);
+
+      const files = e.dataTransfer.files;
+      if (files.length > 0) {
+        const file = files[0];
+        const validExtensions = [".glb", ".gltf"];
+        const fileExtension = file.name
+          .substring(file.name.lastIndexOf("."))
+          .toLowerCase();
+
+        if (validExtensions.includes(fileExtension)) {
+          const url = URL.createObjectURL(file);
+          setFilePath(url);
+        } else {
+          alert("Please upload a glTF or GLB file.");
+        }
+      }
+    },
+    [setFilePath]
+  );
+
   return (
     <Fragment>
-      <button class={styles.downloadButton} onClick={onSave}>
+      <button className={styles.downloadButton} onClick={onSave}>
         Download glTF
       </button>
-      <model-viewer
-        id="viewer"
-        ref={modelViewerRef}
-        class={styles.viewer}
-        src={filePath}
-        camera-controls
-        autoplay
-        animation-name={currentSelectAnimation}
-        ar
-        ar-modes="webxr scene-viewer"
-        shadow-intensity="1"
-      ></model-viewer>
+      <div
+        ref={viewerContainerRef}
+        className={`${styles.viewerContainer} ${
+          isDragging ? styles.dragging : ""
+        }`}
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        onDrop={handleDrop}
+      >
+        {isDragging && (
+          <div className={styles.dropOverlay}>
+            <p>Drop 3D model here</p>
+          </div>
+        )}
+        <model-viewer
+          id="viewer"
+          ref={modelViewerRef}
+          className={styles.viewer}
+          src={filePath}
+          camera-controls
+          autoplay
+          animation-name={currentSelectAnimation}
+          ar
+          ar-modes="webxr scene-viewer"
+          shadow-intensity="1"
+        ></model-viewer>
+      </div>
     </Fragment>
   );
 };

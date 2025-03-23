@@ -1,9 +1,37 @@
 @import "../variables";
 @import "../mixin/animation";
-
-.viewer {
+.viewerContainer {
+  position: relative;
   width: 100%;
   height: 100%;
+
+  model-viewer {
+    width: 100%;
+    height: 100%;
+  }
+}
+
+.dragging {
+  border: 2px dashed #3498db;
+}
+
+.dropOverlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 10;
+}
+
+.dropOverlay p {
+  color: white;
+  font-size: 24px;
+  font-weight: bold;
 }
 
 .downloadButton {
