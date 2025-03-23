@@ -33,6 +33,8 @@ const MainContent = () => {
           <br />
           Displays warning on using glb in WebAR.
           <br />
+          No data is uploaded to an external server.
+          <br />
           <img
             className={styles.symbolMark}
             src="/images/rocket.png"

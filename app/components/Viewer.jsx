@@ -7,24 +7,26 @@ import {
   useRef,
   useState,
 } from "react";
-import { useRecoilValue, useSetRecoilState } from "recoil";
+import { useRecoilValue } from "recoil";
 
 // states
 import { filePathState } from "../state/atoms/Upload3DModelAtom";
 import { currentSelectAnimationState } from "../state/atoms/CurrentSelect";
+
+// hooks
+import { useModelUpload } from "../hooks/useModelUpload";
 
 // styles
 import styles from "../styles/components/viewer.module.scss";
 
 const Viewer = ({ currentResizeTexture }) => {
   const filePath = useRecoilValue(filePathState);
-  const setFilePath = useSetRecoilState(filePathState);
   const currentSelectAnimation = useRecoilValue(currentSelectAnimationState);
-  const [isDragging, setIsDragging] = useState(false);
+  const { onChangeFile } = useModelUpload();
 
   const modelViewerRef = useRef(null);
   const materials = useRef([]);
-  const viewerContainerRef = useRef(null);
+  const [isDragging, setIsDragging] = useState(false);
 
   useEffect(() => {
     const modelViewer = document.querySelector("model-viewer#viewer");
@@ -72,29 +74,17 @@ const Viewer = ({ currentResizeTexture }) => {
     setIsDragging(false);
   }, []);
 
+  // ドラッグアンドドロップ機能を追加
   const handleDrop = useCallback(
-    (e) => {
-      e.preventDefault();
-      e.stopPropagation();
+    (event) => {
+      event.preventDefault();
       setIsDragging(false);
-
-      const files = e.dataTransfer.files;
-      if (files.length > 0) {
-        const file = files[0];
-        const validExtensions = [".glb", ".gltf"];
-        const fileExtension = file.name
-          .substring(file.name.lastIndexOf("."))
-          .toLowerCase();
-
-        if (validExtensions.includes(fileExtension)) {
-          const url = URL.createObjectURL(file);
-          setFilePath(url);
-        } else {
-          alert("Please upload a glTF or GLB file.");
-        }
+      const file = event.dataTransfer.files[0];
+      if (file) {
+        onChangeFile(file);
       }
     },
-    [setFilePath]
+    [onChangeFile]
   );
 
   return (
@@ -103,7 +93,6 @@ const Viewer = ({ currentResizeTexture }) => {
         Download glTF
       </button>
       <div
-        ref={viewerContainerRef}
         className={`${styles.viewerContainer} ${
           isDragging ? styles.dragging : ""
         }`}
