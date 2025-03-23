@@ -1,10 +1,20 @@
 // lib
-import { Fragment, memo, useCallback, useEffect, useRef } from "react";
+import {
+  Fragment,
+  memo,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import { useRecoilValue } from "recoil";
 
 // states
 import { filePathState } from "../state/atoms/Upload3DModelAtom";
 import { currentSelectAnimationState } from "../state/atoms/CurrentSelect";
+
+// hooks
+import { useModelUpload } from "../hooks/useModelUpload";
 
 // styles
 import styles from "../styles/components/viewer.module.scss";
@@ -12,9 +22,11 @@ import styles from "../styles/components/viewer.module.scss";
 const Viewer = ({ currentResizeTexture }) => {
   const filePath = useRecoilValue(filePathState);
   const currentSelectAnimation = useRecoilValue(currentSelectAnimationState);
+  const { onChangeFile } = useModelUpload();
 
   const modelViewerRef = useRef(null);
   const materials = useRef([]);
+  const [isDragging, setIsDragging] = useState(false);
 
   useEffect(() => {
     const modelViewer = document.querySelector("model-viewer#viewer");
@@ -50,23 +62,62 @@ const Viewer = ({ currentResizeTexture }) => {
     download();
   }, []);
 
+  const handleDragOver = useCallback((e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  }, []);
+
+  const handleDragLeave = useCallback((e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+  }, []);
+
+  // ドラッグアンドドロップ機能を追加
+  const handleDrop = useCallback(
+    (event) => {
+      event.preventDefault();
+      setIsDragging(false);
+      const file = event.dataTransfer.files[0];
+      if (file) {
+        onChangeFile(file);
+      }
+    },
+    [onChangeFile]
+  );
+
   return (
     <Fragment>
-      <button class={styles.downloadButton} onClick={onSave}>
+      <button className={styles.downloadButton} onClick={onSave}>
         Download glTF
       </button>
-      <model-viewer
-        id="viewer"
-        ref={modelViewerRef}
-        class={styles.viewer}
-        src={filePath}
-        camera-controls
-        autoplay
-        animation-name={currentSelectAnimation}
-        ar
-        ar-modes="webxr scene-viewer"
-        shadow-intensity="1"
-      ></model-viewer>
+      <div
+        className={`${styles.viewerContainer} ${
+          isDragging ? styles.dragging : ""
+        }`}
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        onDrop={handleDrop}
+      >
+        {isDragging && (
+          <div className={styles.dropOverlay}>
+            <p>Drop 3D model here</p>
+          </div>
+        )}
+        <model-viewer
+          id="viewer"
+          ref={modelViewerRef}
+          className={styles.viewer}
+          src={filePath}
+          camera-controls
+          autoplay
+          animation-name={currentSelectAnimation}
+          ar
+          ar-modes="webxr scene-viewer"
+          shadow-intensity="1"
+        ></model-viewer>
+      </div>
     </Fragment>
   );
 };

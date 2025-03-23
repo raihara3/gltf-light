@@ -5,11 +5,12 @@
 }
 
 .innerBox {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
+  display: grid;
+  align-content: center;
+  justify-content: center;
+  align-items: center;
   width: 100%;
+  height: 100%;
   text-align: center;
   line-height: 1.4rem;
 }
@@ -17,5 +18,24 @@
 .symbolMark {
   width: 100px;
   height: auto;
-  margin-top: 80px;
+  margin: 80px auto 0;
+}
+
+.dropOverlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 10;
+}
+
+.dropOverlay p {
+  color: white;
+  font-size: 24px;
+  font-weight: bold;
 }
