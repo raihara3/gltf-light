@@ -1,8 +1,8 @@
 "use client";
 
 // lib
-import { memo, useRef, useCallback, useEffect } from 'react';
-import { useSetRecoilState, useRecoilValue, useRecoilState } from 'recoil';
+import { memo, useRef, useCallback, useEffect } from "react";
+import { useSetRecoilState, useRecoilValue, useRecoilState } from "recoil";
 
 // stores
 import { filePathState } from "../../state/atoms/Upload3DModelAtom";
@@ -34,7 +34,9 @@ const Uploader = () => {
   const setUpload3DModelSelector = useSetRecoilState(upload3DModelSelector);
   const setAnimations = useSetRecoilState(animationsState);
   const setPolygonCount = useSetRecoilState(polygonCountState);
-  const setCurrentSelectAnimation = useSetRecoilState(currentSelectAnimationState);
+  const setCurrentSelectAnimation = useSetRecoilState(
+    currentSelectAnimationState
+  );
   const setMaterials = useSetRecoilState(materialsState);
   const setTextures = useSetRecoilState(texturesState);
   const [logs, setLogs] = useRecoilState(logsState);
@@ -45,34 +47,34 @@ const Uploader = () => {
       name: upload3DModelRef.current.name,
       filePath: upload3DModelRef.current.filePath,
       fileSize: upload3DModelRef.current.fileSize,
-    })
-  }, [])
+    });
+  }, []);
 
   useEffect(() => {
-    if(!filePath) return;
+    if (!filePath) return;
 
     gltfModelRef.current.load(filePath).then(() => {
-      const animations = gltfModelRef.current.getAnimations()
+      const animations = gltfModelRef.current.getAnimations();
       setAnimations(animations);
       setCurrentSelectAnimation(animations[0]);
       setPolygonCount(gltfModelRef.current.getPolygonCount());
 
-      const materials = gltfModelRef.current.getMaterials()
-      setMaterials(materials)
+      const materials = gltfModelRef.current.getMaterials();
+      setMaterials(materials);
 
-      setTextures(gltfModelRef.current.getTextures(materials))
+      setTextures(gltfModelRef.current.getTextures(materials));
 
-      const getLog = async() => {
+      const getLog = async () => {
         const uploadLog = Logger.log({
           logType: LogType.INFO,
-          message: `${upload3DModelRef.current.name} upload.`
-        })
-        const validateLogs = await gltfModelRef.current.validate()
-        setLogs(logs.concat([uploadLog], validateLogs))
-      }
+          message: `${upload3DModelRef.current.name} upload.`,
+        });
+        const validateLogs = await gltfModelRef.current.validate();
+        setLogs(logs.concat([uploadLog], validateLogs));
+      };
       getLog();
-    })
-  }, [filePath])
+    });
+  }, [filePath]);
 
   return (
     <div>
@@ -87,7 +89,8 @@ const Uploader = () => {
           onChangeFile(file);
         }}
       >
-        Upload 3D model<br/>
+        Upload 3D model
+        <br />
         ( glb )
         <input
           type="file"
@@ -102,6 +105,6 @@ const Uploader = () => {
       </label>
     </div>
   );
-}
+};
 
 export default memo(Uploader);
