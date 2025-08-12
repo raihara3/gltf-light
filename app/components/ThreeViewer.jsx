@@ -233,13 +233,28 @@ const ThreeViewer = ({ currentResizeTexture = {} }) => {
         sceneRef.current.add(model);
         modelRef.current = model;
 
-        // マテリアルの保存
+        // マテリアルの保存とテクスチャの初期設定保持
         const materials = [];
         model.traverse((child) => {
           if (child.isMesh && child.material) {
             if (Array.isArray(child.material)) {
+              child.material.forEach((material) => {
+                // テクスチャの初期設定を確保
+                if (material.map) {
+                  // GLTFから読み込まれたテクスチャの設定を保持
+                  if (material.map.flipY === undefined) {
+                    material.map.flipY = false; // GLTFのデフォルト
+                  }
+                }
+              });
               materials.push(...child.material);
             } else {
+              // テクスチャの初期設定を確保
+              if (child.material.map) {
+                if (child.material.map.flipY === undefined) {
+                  child.material.map.flipY = false; // GLTFのデフォルト
+                }
+              }
               materials.push(child.material);
             }
           }
@@ -329,9 +344,33 @@ const ThreeViewer = ({ currentResizeTexture = {} }) => {
     const textureLoader = new THREE.TextureLoader();
     textureLoader.load(currentResizeTexture.src, (texture) => {
       texture.colorSpace = THREE.SRGBColorSpace;
+      
+      // テクスチャのUV設定を適切に設定
+      texture.wrapS = THREE.RepeatWrapping;
+      texture.wrapT = THREE.RepeatWrapping;
+      texture.repeat.set(1, 1);
+      texture.offset.set(0, 0);
+      
+      // フィルタリング設定
+      texture.minFilter = THREE.LinearMipmapLinearFilter;
+      texture.magFilter = THREE.LinearFilter;
+      
+      // テクスチャが反転しないように設定
+      texture.flipY = false;
 
       materialsRef.current.forEach((material) => {
         if (material.name === currentResizeTexture.materialName) {
+          // 元のテクスチャの設定を保持
+          const originalTexture = material.map;
+          if (originalTexture) {
+            // 元のテクスチャのUV設定をコピー
+            texture.wrapS = originalTexture.wrapS;
+            texture.wrapT = originalTexture.wrapT;
+            texture.repeat.copy(originalTexture.repeat);
+            texture.offset.copy(originalTexture.offset);
+            texture.flipY = originalTexture.flipY;
+          }
+          
           material.map = texture;
           material.needsUpdate = true;
         }
