@@ -5,6 +5,7 @@ import { memo } from 'react';
 import Uploader from '../components/sidebar/Uploader';
 import Statistics from "../components/sidebar/Statistics";
 import Animations from "../components/sidebar/Animations";
+import AnimationsMulti from "../components/sidebar/AnimationsMulti";
 import Materials from "../components/sidebar/Materials";
 import Textures from "../components/sidebar/Textures";
 
@@ -12,12 +13,16 @@ import Textures from "../components/sidebar/Textures";
 import styles from "../styles/components/sidebar.module.scss"
 
 const Sidebar = () => {
+  // 環境変数でアニメーションコンポーネントを切り替え
+  const useThreeViewer = process.env.NEXT_PUBLIC_USE_THREE_VIEWER === 'true';
+  const AnimationComponent = useThreeViewer ? AnimationsMulti : Animations;
+  
   return (
     <aside className={styles.sidebar}>
       <Uploader />
 
       <Statistics />
-      <Animations />
+      <AnimationComponent />
       <Materials />
       <Textures />
     </aside>
