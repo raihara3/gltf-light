@@ -39,8 +39,14 @@ const ThreeViewer = ({ currentResizeTexture = {} }) => {
   const animationActionsRef = useRef({});
   const clockRef = useRef(new THREE.Clock());
   const materialsRef = useRef([]);
+  const onChangeFileRef = useRef(onChangeFile);
 
   const [isDragging, setIsDragging] = useState(false);
+
+  // onChangeFileの参照を更新
+  useEffect(() => {
+    onChangeFileRef.current = onChangeFile;
+  }, [onChangeFile]);
 
   // Three.js初期化
   useEffect(() => {
@@ -75,7 +81,38 @@ const ThreeViewer = ({ currentResizeTexture = {} }) => {
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
     renderer.toneMappingExposure = 1;
     rendererRef.current = renderer;
-    mountRef.current.appendChild(renderer.domElement);
+
+    // Canvas要素にドラッグ&ドロップイベントを追加
+    const canvas = renderer.domElement;
+    canvas.style.pointerEvents = "auto";
+
+    const canvasDragOver = (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      setIsDragging(true);
+    };
+
+    const canvasDragLeave = (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      setIsDragging(false);
+    };
+
+    const canvasDrop = (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      setIsDragging(false);
+      const file = e.dataTransfer.files[0];
+      if (file) {
+        onChangeFileRef.current(file);
+      }
+    };
+
+    canvas.addEventListener("dragover", canvasDragOver);
+    canvas.addEventListener("dragleave", canvasDragLeave);
+    canvas.addEventListener("drop", canvasDrop);
+
+    mountRef.current.appendChild(canvas);
 
     // Environment
     const pmremGenerator = new THREE.PMREMGenerator(renderer);
@@ -147,6 +184,12 @@ const ThreeViewer = ({ currentResizeTexture = {} }) => {
 
     return () => {
       window.removeEventListener("resize", handleResize);
+
+      // Canvas要素のイベントリスナーを削除
+      canvas.removeEventListener("dragover", canvasDragOver);
+      canvas.removeEventListener("dragleave", canvasDragLeave);
+      canvas.removeEventListener("drop", canvasDrop);
+
       renderer.dispose();
       pmremGenerator.dispose();
       if (mountRef.current && renderer.domElement) {
@@ -235,6 +278,12 @@ const ThreeViewer = ({ currentResizeTexture = {} }) => {
             const action = mixerRef.current.clipAction(clip);
             animationActionsRef.current[clip.name] = action;
           });
+        }
+
+        // モデル読み込み完了後に強制レンダリング
+        console.log("Force rendering after model load");
+        if (rendererRef.current && sceneRef.current && cameraRef.current) {
+          rendererRef.current.render(sceneRef.current, cameraRef.current);
         }
       },
       undefined,

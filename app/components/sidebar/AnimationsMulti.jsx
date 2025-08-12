@@ -1,6 +1,6 @@
 // lib
-import { memo, Fragment, useState, useEffect } from 'react';
-import { useRecoilValue, useSetRecoilState } from 'recoil';
+import { memo, Fragment, useState, useEffect } from "react";
+import { useRecoilValue, useSetRecoilState } from "recoil";
 
 // states
 import { animationsState } from "../../state/atoms/ModelInfo";
@@ -8,11 +8,13 @@ import { currentSelectAnimationState } from "../../state/atoms/CurrentSelect";
 
 const AnimationsMulti = () => {
   const animations = useRecoilValue(animationsState);
-  const setCurrentSelectAnimation = useSetRecoilState(currentSelectAnimationState);
+  const setCurrentSelectAnimation = useSetRecoilState(
+    currentSelectAnimationState
+  );
   const [selectedAnimations, setSelectedAnimations] = useState([]);
-  
+
   // Three.jsビューワーが有効かどうか
-  const useThreeViewer = process.env.NEXT_PUBLIC_USE_THREE_VIEWER === 'true';
+  const useThreeViewer = process.env.NEXT_PUBLIC_USE_THREE_VIEWER === "true";
 
   useEffect(() => {
     // 初回ロード時に最初のアニメーションを自動選択（autoplay）
@@ -25,11 +27,13 @@ const AnimationsMulti = () => {
 
   const handleAnimationToggle = (animationName) => {
     let newSelection;
-    
+
     if (useThreeViewer) {
       // Three.jsビューワーの場合は複数選択可能
       if (selectedAnimations.includes(animationName)) {
-        newSelection = selectedAnimations.filter(name => name !== animationName);
+        newSelection = selectedAnimations.filter(
+          (name) => name !== animationName
+        );
       } else {
         newSelection = [...selectedAnimations, animationName];
       }
@@ -44,17 +48,14 @@ const AnimationsMulti = () => {
 
   return (
     <Fragment>
-      <h3 className="title">
-        Animations ({animations.length})
-        {useThreeViewer && <span style={{ fontSize: '0.8em', marginLeft: '8px' }}>(Multi-select)</span>}
-      </h3>
+      <h3 className="title">Animations ({animations.length})</h3>
       {animations.map((animation, index) => (
         <label key={index} className="note text-overflow">
           <input
             type={useThreeViewer ? "checkbox" : "radio"}
             name="animation"
             checked={
-              useThreeViewer 
+              useThreeViewer
                 ? selectedAnimations.includes(animation.name)
                 : selectedAnimations[0] === animation.name
             }
