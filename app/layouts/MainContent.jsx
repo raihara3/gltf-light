@@ -23,9 +23,8 @@ const MainContent = () => {
   const [currentResizeTexture, setCurrentResizeTexture] = useState(null);
   const [isDragging, setIsDragging] = useState(false);
   
-  // 環境変数でビューワーを切り替え
-  const useThreeViewer = process.env.NEXT_PUBLIC_USE_THREE_VIEWER === 'true';
-  const ViewerComponent = useThreeViewer ? ThreeViewer : Viewer;
+  // Three.jsビューワーをデフォルトで使用
+  const ViewerComponent = ThreeViewer;
 
   const handleDragOver = useCallback((e) => {
     e.preventDefault();
