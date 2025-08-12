@@ -13,8 +13,8 @@ const AnimationsMulti = () => {
   );
   const [selectedAnimations, setSelectedAnimations] = useState([]);
 
-  // Three.jsビューワーが有効かどうか
-  const useThreeViewer = process.env.NEXT_PUBLIC_USE_THREE_VIEWER === "true";
+  // Three.jsビューワーを常に使用
+  const useThreeViewer = true;
 
   useEffect(() => {
     // 初回ロード時に最初のアニメーションを自動選択（autoplay）

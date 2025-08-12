@@ -13,9 +13,8 @@ import Textures from "../components/sidebar/Textures";
 import styles from "../styles/components/sidebar.module.scss"
 
 const Sidebar = () => {
-  // 環境変数でアニメーションコンポーネントを切り替え
-  const useThreeViewer = process.env.NEXT_PUBLIC_USE_THREE_VIEWER === 'true';
-  const AnimationComponent = useThreeViewer ? AnimationsMulti : Animations;
+  // Three.jsビューワーをデフォルトで使用
+  const AnimationComponent = AnimationsMulti;
   
   return (
     <aside className={styles.sidebar}>
