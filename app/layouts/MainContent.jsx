@@ -7,7 +7,6 @@ import { filePathState } from "../state/atoms/Upload3DModelAtom";
 
 // component
 import Viewer from "../components/Viewer";
-import ThreeViewer from "../components/ThreeViewer";
 import Logbox from "../components/Logbox";
 import TextureResizeModal from "../components/TextureResizeModal";
 
@@ -22,10 +21,6 @@ const MainContent = () => {
   const { onChangeFile } = useModelUpload();
   const [currentResizeTexture, setCurrentResizeTexture] = useState(null);
   const [isDragging, setIsDragging] = useState(false);
-  
-  // 環境変数でビューワーを切り替え
-  const useThreeViewer = process.env.NEXT_PUBLIC_USE_THREE_VIEWER === 'true';
-  const ViewerComponent = useThreeViewer ? ThreeViewer : Viewer;
 
   const handleDragOver = useCallback((e) => {
     e.preventDefault();
@@ -56,7 +51,7 @@ const MainContent = () => {
     <div className={styles.wrap}>
       {filePath ? (
         <Fragment>
-          <ViewerComponent currentResizeTexture={currentResizeTexture} />
+          <Viewer currentResizeTexture={currentResizeTexture} />
           <Logbox />
           <TextureResizeModal
             setCurrentResizeTexture={setCurrentResizeTexture}
