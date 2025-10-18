@@ -49,21 +49,25 @@ const AnimationsMulti = () => {
   return (
     <Fragment>
       <h3 className="title">Animations ({animations.length})</h3>
-      {animations.map((animation, index) => (
-        <label key={index} className="note text-overflow">
-          <input
-            type={useThreeViewer ? "checkbox" : "radio"}
-            name="animation"
-            checked={
-              useThreeViewer
-                ? selectedAnimations.includes(animation.name)
-                : selectedAnimations[0] === animation.name
-            }
-            onChange={() => handleAnimationToggle(animation.name)}
-          />
-          {animation.name}
-        </label>
-      ))}
+      {animations.map((animation, index) => {
+        const duration = animation.duration.toFixed(1);
+        const frames = Math.round(animation.duration * 30);
+        return (
+          <label key={index} className="note text-overflow">
+            <input
+              type={useThreeViewer ? "checkbox" : "radio"}
+              name="animation"
+              checked={
+                useThreeViewer
+                  ? selectedAnimations.includes(animation.name)
+                  : selectedAnimations[0] === animation.name
+              }
+              onChange={() => handleAnimationToggle(animation.name)}
+            />
+            {animation.name} ({frames}f / {duration}s @30fps)
+          </label>
+        );
+      })}
     </Fragment>
   );
 };
