@@ -17,6 +17,7 @@ import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment
 // states
 import { filePathState } from "../state/atoms/Upload3DModelAtom";
 import { currentSelectAnimationState } from "../state/atoms/CurrentSelect";
+import { selectedMaterialNameState, materialPropertiesState } from "../state/atoms/ModelInfo";
 
 // hooks
 import { useModelUpload } from "../hooks/useModelUpload";
@@ -27,6 +28,8 @@ import styles from "../styles/components/viewer.module.scss";
 const ThreeViewer = ({ currentResizeTexture = {} }) => {
   const filePath = useRecoilValue(filePathState);
   const currentSelectAnimation = useRecoilValue(currentSelectAnimationState);
+  const selectedMaterialName = useRecoilValue(selectedMaterialNameState);
+  const materialProperties = useRecoilValue(materialPropertiesState);
   const { onChangeFile } = useModelUpload();
 
   const mountRef = useRef(null);
@@ -344,17 +347,17 @@ const ThreeViewer = ({ currentResizeTexture = {} }) => {
     const textureLoader = new THREE.TextureLoader();
     textureLoader.load(currentResizeTexture.src, (texture) => {
       texture.colorSpace = THREE.SRGBColorSpace;
-      
+
       // テクスチャのUV設定を適切に設定
       texture.wrapS = THREE.RepeatWrapping;
       texture.wrapT = THREE.RepeatWrapping;
       texture.repeat.set(1, 1);
       texture.offset.set(0, 0);
-      
+
       // フィルタリング設定
       texture.minFilter = THREE.LinearMipmapLinearFilter;
       texture.magFilter = THREE.LinearFilter;
-      
+
       // テクスチャが反転しないように設定
       texture.flipY = false;
 
@@ -370,13 +373,40 @@ const ThreeViewer = ({ currentResizeTexture = {} }) => {
             texture.offset.copy(originalTexture.offset);
             texture.flipY = originalTexture.flipY;
           }
-          
+
           material.map = texture;
           material.needsUpdate = true;
         }
       });
     });
   }, [currentResizeTexture]);
+
+  // マテリアルプロパティの動的変更
+  useEffect(() => {
+    if (!selectedMaterialName || !materialsRef.current) return;
+
+    // 選択されたマテリアルを名前で検索して更新
+    const targetMaterial = materialsRef.current.find(
+      (material) => material.name === selectedMaterialName
+    );
+
+    if (!targetMaterial) return;
+
+    // マテリアルのroughnessとmetalnessを更新
+    if (targetMaterial.roughness !== undefined) {
+      targetMaterial.roughness = materialProperties.roughness;
+    }
+    if (targetMaterial.metalness !== undefined) {
+      targetMaterial.metalness = materialProperties.metalness;
+    }
+
+    targetMaterial.needsUpdate = true;
+
+    // レンダリングを強制更新
+    if (rendererRef.current && sceneRef.current && cameraRef.current) {
+      rendererRef.current.render(sceneRef.current, cameraRef.current);
+    }
+  }, [selectedMaterialName, materialProperties]);
 
   // エクスポート機能
   const onSave = useCallback(() => {
