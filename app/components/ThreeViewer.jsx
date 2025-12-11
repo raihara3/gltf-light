@@ -45,6 +45,7 @@ const ThreeViewer = ({ currentResizeTexture = {} }) => {
   const onChangeFileRef = useRef(onChangeFile);
 
   const [isDragging, setIsDragging] = useState(false);
+  const [isLightMode, setIsLightMode] = useState(false);
 
   // onChangeFileの参照を更新
   useEffect(() => {
@@ -455,15 +456,28 @@ const ThreeViewer = ({ currentResizeTexture = {} }) => {
     [onChangeFile]
   );
 
+  const toggleLightMode = useCallback(() => {
+    setIsLightMode((previous) => !previous);
+  }, []);
+
   return (
     <Fragment>
-      <button className={styles.downloadButton} onClick={onSave}>
-        Download glTF
-      </button>
+      <div className={styles.buttonGroup}>
+        <button
+          className={`${styles.modeToggleButton} ${isLightMode ? styles.lightModeActive : ""}`}
+          onClick={toggleLightMode}
+          title={isLightMode ? "Switch to Dark Mode" : "Switch to Light Mode"}
+        >
+          {isLightMode ? "☀️" : "🌙"}
+        </button>
+        <button className={styles.downloadButton} onClick={onSave}>
+          Download glTF
+        </button>
+      </div>
       <div
         className={`${styles.viewerContainer} ${
           isDragging ? styles.dragging : ""
-        }`}
+        } ${isLightMode ? styles.lightMode : ""}`}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
