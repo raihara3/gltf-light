@@ -4,6 +4,8 @@
   position: relative;
   width: 100%;
   height: 100%;
+  background-color: $bg-color;
+  @include ease-animation;
 
   model-viewer {
     width: 100%;
@@ -16,6 +18,10 @@
     min-height: 400px;
     display: block;
   }
+}
+
+.lightMode {
+  background-color: $white;
 }
 
 .dragging {
@@ -41,11 +47,36 @@
   font-weight: bold;
 }
 
-.downloadButton {
+.buttonGroup {
   position: absolute;
   top: 0;
   right: 0;
   z-index: 10;
+  display: flex;
+  gap: 5px;
+}
+
+.modeToggleButton {
+  padding: 7px 10px;
+  background: $dark-blue;
+  border: solid 1px $light-blue;
+  color: $light-blue;
+  font-size: 16px;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.modeToggleButton:hover {
+  opacity: 0.7;
+  @include ease-animation;
+}
+
+.lightModeActive {
+  background: $white;
+  border-color: $dark-blue;
+}
+
+.downloadButton {
   padding: 7px 10px;
   background: $dark-blue;
   border: solid 1px $light-blue;
