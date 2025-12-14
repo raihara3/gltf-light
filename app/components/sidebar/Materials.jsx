@@ -1,16 +1,17 @@
 // lib
 import { memo, Fragment, useCallback } from 'react';
-import { useRecoilValue, useRecoilState } from 'recoil';
+import { useRecoilState } from 'recoil';
 
 // states
 import {
   materialsState,
   selectedMaterialNameState,
-  materialPropertiesState
+  materialPropertiesState,
+  updateMaterialProperty
 } from "../../state/atoms/ModelInfo";
 
 const Materials = () => {
-  const materials = useRecoilValue(materialsState);
+  const [materials, setMaterials] = useRecoilState(materialsState);
   const [selectedMaterialName, setSelectedMaterialName] = useRecoilState(selectedMaterialNameState);
   const [materialProperties, setMaterialProperties] = useRecoilState(materialPropertiesState);
 
@@ -30,7 +31,10 @@ const Materials = () => {
       ...prev,
       roughness: value,
     }));
-  }, [setMaterialProperties]);
+    if (selectedMaterialName) {
+      setMaterials((prev) => updateMaterialProperty(prev, selectedMaterialName, "roughness", value));
+    }
+  }, [setMaterialProperties, selectedMaterialName, setMaterials]);
 
   const handleMetalnessChange = useCallback((event) => {
     const value = parseFloat(event.target.value);
@@ -38,7 +42,10 @@ const Materials = () => {
       ...prev,
       metalness: value,
     }));
-  }, [setMaterialProperties]);
+    if (selectedMaterialName) {
+      setMaterials((prev) => updateMaterialProperty(prev, selectedMaterialName, "metalness", value));
+    }
+  }, [setMaterialProperties, selectedMaterialName, setMaterials]);
 
   return (
     <Fragment>
