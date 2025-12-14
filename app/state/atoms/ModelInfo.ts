@@ -40,3 +40,17 @@ export const materialPropertiesState = atom<{
     metalness: 0.5,
   },
 })
+
+export const updateMaterialProperty = (
+  materials: Material[],
+  materialName: string,
+  property: "roughness" | "metalness",
+  value: number
+): Material[] => {
+  return materials.map((material) => {
+    if (material.name === materialName) {
+      (material as any)[property] = value;
+    }
+    return material;
+  });
+}
