@@ -1,9 +1,6 @@
 // lib
 import { memo, Fragment, useCallback } from 'react';
-import { useRecoilValue, useRecoilState, useSetRecoilState } from 'recoil';
-
-// hooks
-import { useTestMode } from "../../hooks/useQueryParams";
+import { useRecoilValue, useRecoilState } from 'recoil';
 
 // states
 import {
@@ -13,14 +10,11 @@ import {
 } from "../../state/atoms/ModelInfo";
 
 const Materials = () => {
-  const isTestMode = useTestMode();
   const materials = useRecoilValue(materialsState);
   const [selectedMaterialName, setSelectedMaterialName] = useRecoilState(selectedMaterialNameState);
   const [materialProperties, setMaterialProperties] = useRecoilState(materialPropertiesState);
 
   const handleMaterialClick = useCallback((material) => {
-    if (!isTestMode) return;
-
     setSelectedMaterialName(material.name);
 
     // 選択したマテリアルの現在の値をセット
@@ -28,7 +22,7 @@ const Materials = () => {
       roughness: material.roughness !== undefined ? material.roughness : 0.5,
       metalness: material.metalness !== undefined ? material.metalness : 0.5,
     });
-  }, [isTestMode, setSelectedMaterialName, setMaterialProperties]);
+  }, [setSelectedMaterialName, setMaterialProperties]);
 
   const handleRoughnessChange = useCallback((event) => {
     const value = parseFloat(event.target.value);
@@ -55,8 +49,8 @@ const Materials = () => {
           className="note text-overflow"
           onClick={() => handleMaterialClick(material)}
           style={{
-            cursor: isTestMode ? 'pointer' : 'default',
-            backgroundColor: isTestMode && selectedMaterialName === material.name ? '#444' : 'transparent',
+            cursor: 'pointer',
+            backgroundColor: selectedMaterialName === material.name ? '#444' : 'transparent',
             padding: '4px 8px',
             borderRadius: '4px',
           }}
@@ -65,7 +59,7 @@ const Materials = () => {
         </div>
       ))}
 
-      {isTestMode && selectedMaterialName && (
+      {selectedMaterialName && (
         <div style={{ marginTop: '16px', padding: '8px' }}>
           <h4 style={{ marginBottom: '8px', fontSize: '14px' }}>Material Properties</h4>
 
