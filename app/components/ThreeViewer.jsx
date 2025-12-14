@@ -40,6 +40,7 @@ const ThreeViewer = ({ currentResizeTexture = {} }) => {
   const modelRef = useRef(null);
   const mixerRef = useRef(null);
   const animationActionsRef = useRef({});
+  const animationClipsRef = useRef([]);
   const clockRef = useRef(new THREE.Clock());
   const materialsRef = useRef([]);
   const onChangeFileRef = useRef(onChangeFile);
@@ -292,11 +293,14 @@ const ThreeViewer = ({ currentResizeTexture = {} }) => {
         if (gltf.animations && gltf.animations.length > 0) {
           mixerRef.current = new THREE.AnimationMixer(model);
           animationActionsRef.current = {};
+          animationClipsRef.current = gltf.animations;
 
           gltf.animations.forEach((clip) => {
             const action = mixerRef.current.clipAction(clip);
             animationActionsRef.current[clip.name] = action;
           });
+        } else {
+          animationClipsRef.current = [];
         }
 
         // モデル読み込み完了後に強制レンダリング
@@ -414,6 +418,11 @@ const ThreeViewer = ({ currentResizeTexture = {} }) => {
     if (!sceneRef.current || !modelRef.current) return;
 
     const exporter = new GLTFExporter();
+    const exportOptions = {
+      binary: true,
+      animations: animationClipsRef.current,
+    };
+
     exporter.parse(
       modelRef.current,
       (gltf) => {
@@ -427,7 +436,7 @@ const ThreeViewer = ({ currentResizeTexture = {} }) => {
       (error) => {
         console.error("An error occurred during export:", error);
       },
-      { binary: true }
+      exportOptions
     );
   }, []);
 
