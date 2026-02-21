@@ -89,3 +89,57 @@
   opacity: 0.7;
   @include ease-animation;
 }
+
+.captureModeActive {
+  background: #4a90d9;
+  border-color: #4a90d9;
+  color: $white;
+}
+
+.captureControls {
+  position: absolute;
+  top: 35px;
+  right: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 6px 10px;
+  background: rgba($dark-blue, 0.9);
+  border: solid 1px $blue;
+}
+
+.captureLabel {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: $light-blue;
+  font-size: 12px;
+  white-space: nowrap;
+
+  input[type="range"] {
+    width: 80px;
+  }
+}
+
+.captureValue {
+  color: $white;
+  font-size: 12px;
+  min-width: 32px;
+  text-align: right;
+}
+
+.captureButton {
+  padding: 4px 10px;
+  background: #4a90d9;
+  border: none;
+  color: $white;
+  font-size: 12px;
+  cursor: pointer;
+  white-space: nowrap;
+
+  &:hover {
+    opacity: 0.7;
+    @include ease-animation;
+  }
+}
