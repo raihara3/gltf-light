@@ -7,7 +7,7 @@ import {
   useRef,
   useState,
 } from "react";
-import { useRecoilValue } from "recoil";
+import { useRecoilValue, useSetRecoilState, useRecoilState } from "recoil";
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
@@ -16,7 +16,13 @@ import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment
 
 // states
 import { filePathState } from "../state/atoms/Upload3DModelAtom";
-import { currentSelectAnimationState } from "../state/atoms/CurrentSelect";
+import {
+  currentSelectAnimationState,
+  animationPlayingState,
+  animationCurrentTimeState,
+  animationSeekTimeState,
+  animationDurationState,
+} from "../state/atoms/CurrentSelect";
 import { selectedMaterialNameState, materialPropertiesState } from "../state/atoms/ModelInfo";
 
 // hooks
@@ -25,9 +31,24 @@ import { useModelUpload } from "../hooks/useModelUpload";
 // styles
 import styles from "../styles/components/viewer.module.scss";
 
+const createThrottle = (callback, interval) => {
+  let lastTime = 0;
+  return (...arguments_) => {
+    const now = performance.now();
+    if (now - lastTime >= interval) {
+      lastTime = now;
+      callback(...arguments_);
+    }
+  };
+};
+
 const ThreeViewer = ({ currentResizeTexture = {} }) => {
   const filePath = useRecoilValue(filePathState);
   const currentSelectAnimation = useRecoilValue(currentSelectAnimationState);
+  const isPlaying = useRecoilValue(animationPlayingState);
+  const [seekTime, setSeekTime] = useRecoilState(animationSeekTimeState);
+  const setAnimationCurrentTime = useSetRecoilState(animationCurrentTimeState);
+  const setAnimationDuration = useSetRecoilState(animationDurationState);
   const selectedMaterialName = useRecoilValue(selectedMaterialNameState);
   const materialProperties = useRecoilValue(materialPropertiesState);
   const { onChangeFile } = useModelUpload();
@@ -43,15 +64,35 @@ const ThreeViewer = ({ currentResizeTexture = {} }) => {
   const animationClipsRef = useRef([]);
   const clockRef = useRef(new THREE.Clock());
   const materialsRef = useRef([]);
+  const isPlayingRef = useRef(true);
+  const animationDurationRef = useRef(0);
+  const throttledSetTimeRef = useRef(null);
   const onChangeFileRef = useRef(onChangeFile);
+
+  const ambientLightRef = useRef(null);
+  const directionalLightRef = useRef(null);
 
   const [isDragging, setIsDragging] = useState(false);
   const [isLightMode, setIsLightMode] = useState(false);
+  const [isCaptureMode, setIsCaptureMode] = useState(false);
+  const [ambientIntensity, setAmbientIntensity] = useState(0.5);
+  const [directionalIntensity, setDirectionalIntensity] = useState(0.5);
+  const [environmentIntensity, setEnvironmentIntensity] = useState(1.0);
 
   // onChangeFileの参照を更新
   useEffect(() => {
     onChangeFileRef.current = onChangeFile;
   }, [onChangeFile]);
+
+  useEffect(() => {
+    isPlayingRef.current = isPlaying;
+  }, [isPlaying]);
+
+  useEffect(() => {
+    throttledSetTimeRef.current = createThrottle((time) => {
+      setAnimationCurrentTime(time);
+    }, 100);
+  }, [setAnimationCurrentTime]);
 
   // Three.js初期化
   useEffect(() => {
@@ -74,7 +115,8 @@ const ThreeViewer = ({ currentResizeTexture = {} }) => {
     // Renderer
     const renderer = new THREE.WebGLRenderer({
       antialias: true,
-      alpha: true, // 透明背景を有効化
+      alpha: true,
+      preserveDrawingBuffer: true,
       powerPreference: "high-performance",
     });
     renderer.setClearColor(0x000000, 0); // 完全に透明
@@ -128,6 +170,7 @@ const ThreeViewer = ({ currentResizeTexture = {} }) => {
     // Lights
     const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
     scene.add(ambientLight);
+    ambientLightRef.current = ambientLight;
 
     const directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
     directionalLight.position.set(5, 5, 5);
@@ -141,6 +184,7 @@ const ThreeViewer = ({ currentResizeTexture = {} }) => {
     directionalLight.shadow.mapSize.width = 2048;
     directionalLight.shadow.mapSize.height = 2048;
     scene.add(directionalLight);
+    directionalLightRef.current = directionalLight;
 
     // Controls
     const controls = new OrbitControls(camera, renderer.domElement);
@@ -168,7 +212,16 @@ const ThreeViewer = ({ currentResizeTexture = {} }) => {
       const delta = clockRef.current.getDelta();
 
       if (mixerRef.current) {
-        mixerRef.current.update(delta);
+        if (isPlayingRef.current) {
+          mixerRef.current.update(delta);
+          if (throttledSetTimeRef.current) {
+            const duration = animationDurationRef.current;
+            const time = duration > 0
+              ? mixerRef.current.time % duration
+              : mixerRef.current.time;
+            throttledSetTimeRef.current(time);
+          }
+        }
       }
 
       controls.update();
@@ -290,6 +343,11 @@ const ThreeViewer = ({ currentResizeTexture = {} }) => {
         }
 
         // アニメーション設定
+        setAnimationCurrentTime(0);
+        animationDurationRef.current = 0;
+        setAnimationDuration(0);
+        setSeekTime(null);
+
         if (gltf.animations && gltf.animations.length > 0) {
           mixerRef.current = new THREE.AnimationMixer(model);
           animationActionsRef.current = {};
@@ -330,15 +388,32 @@ const ThreeViewer = ({ currentResizeTexture = {} }) => {
     });
 
     // 選択されたアニメーションをフェードインして再生
+    let maxDuration = 0;
     selectedAnimations.forEach((animationName) => {
       const action = animationActionsRef.current[animationName];
       if (action) {
         action.reset();
         action.fadeIn(0.5);
         action.play();
+        if (action.getClip().duration > maxDuration) {
+          maxDuration = action.getClip().duration;
+        }
       }
     });
-  }, [currentSelectAnimation]);
+    animationDurationRef.current = maxDuration;
+    setAnimationDuration(maxDuration);
+  }, [currentSelectAnimation, setAnimationDuration]);
+
+  // シーク制御
+  useEffect(() => {
+    if (seekTime === null || !mixerRef.current) return;
+    mixerRef.current.setTime(seekTime);
+    setAnimationCurrentTime(seekTime);
+    setSeekTime(null);
+    if (rendererRef.current && sceneRef.current && cameraRef.current) {
+      rendererRef.current.render(sceneRef.current, cameraRef.current);
+    }
+  }, [seekTime, setSeekTime, setAnimationCurrentTime]);
 
   // テクスチャの動的変更
   useEffect(() => {
@@ -465,13 +540,68 @@ const ThreeViewer = ({ currentResizeTexture = {} }) => {
     [onChangeFile]
   );
 
+  useEffect(() => {
+    if (ambientLightRef.current) {
+      ambientLightRef.current.intensity = ambientIntensity;
+    }
+  }, [ambientIntensity]);
+
+  useEffect(() => {
+    if (directionalLightRef.current) {
+      directionalLightRef.current.intensity = directionalIntensity;
+    }
+  }, [directionalIntensity]);
+
+  useEffect(() => {
+    if (sceneRef.current) {
+      sceneRef.current.environmentIntensity = environmentIntensity;
+    }
+  }, [environmentIntensity]);
+
   const toggleLightMode = useCallback(() => {
     setIsLightMode((previous) => !previous);
+  }, []);
+
+  const toggleCaptureMode = useCallback(() => {
+    setIsCaptureMode((previous) => !previous);
+  }, []);
+
+  const handleCapture = useCallback(() => {
+    const renderer = rendererRef.current;
+    const scene = sceneRef.current;
+    const camera = cameraRef.current;
+    if (!renderer || !scene || !camera) return;
+
+    const groundPlane = scene.getObjectByName("groundPlane");
+    const previousGroundVisible = groundPlane?.visible;
+    if (groundPlane) groundPlane.visible = false;
+
+    try {
+      renderer.render(scene, camera);
+      renderer.domElement.toBlob((blob) => {
+        if (!blob) return;
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.download = "capture.png";
+        link.href = url;
+        link.click();
+        URL.revokeObjectURL(url);
+      }, "image/png");
+    } finally {
+      if (groundPlane) groundPlane.visible = previousGroundVisible;
+    }
   }, []);
 
   return (
     <Fragment>
       <div className={styles.buttonGroup}>
+        <button
+          className={`${styles.modeToggleButton} ${isCaptureMode ? styles.captureModeActive : ""}`}
+          onClick={toggleCaptureMode}
+          title={isCaptureMode ? "Exit Capture Mode" : "Enter Capture Mode"}
+        >
+          📷
+        </button>
         <button
           className={`${styles.modeToggleButton} ${isLightMode ? styles.lightModeActive : ""}`}
           onClick={toggleLightMode}
@@ -483,6 +613,49 @@ const ThreeViewer = ({ currentResizeTexture = {} }) => {
           Download glTF
         </button>
       </div>
+      {isCaptureMode && (
+        <div className={styles.captureControls}>
+          <label className={styles.captureLabel}>
+            Ambient
+            <input
+              type="range"
+              min="0"
+              max="3"
+              step="0.01"
+              value={ambientIntensity}
+              onChange={(e) => setAmbientIntensity(Number.parseFloat(e.target.value))}
+            />
+            <span className={styles.captureValue}>{ambientIntensity.toFixed(2)}</span>
+          </label>
+          <label className={styles.captureLabel}>
+            Directional
+            <input
+              type="range"
+              min="0"
+              max="3"
+              step="0.01"
+              value={directionalIntensity}
+              onChange={(e) => setDirectionalIntensity(Number.parseFloat(e.target.value))}
+            />
+            <span className={styles.captureValue}>{directionalIntensity.toFixed(2)}</span>
+          </label>
+          <label className={styles.captureLabel}>
+            Environment
+            <input
+              type="range"
+              min="0"
+              max="3"
+              step="0.01"
+              value={environmentIntensity}
+              onChange={(e) => setEnvironmentIntensity(Number.parseFloat(e.target.value))}
+            />
+            <span className={styles.captureValue}>{environmentIntensity.toFixed(2)}</span>
+          </label>
+          <button className={styles.captureButton} onClick={handleCapture}>
+            Capture PNG
+          </button>
+        </div>
+      )}
       <div
         className={`${styles.viewerContainer} ${
           isDragging ? styles.dragging : ""
