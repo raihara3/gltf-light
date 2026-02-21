@@ -7,7 +7,7 @@ import {
   useRef,
   useState,
 } from "react";
-import { useRecoilValue } from "recoil";
+import { useRecoilValue, useSetRecoilState, useRecoilState } from "recoil";
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
@@ -16,7 +16,13 @@ import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment
 
 // states
 import { filePathState } from "../state/atoms/Upload3DModelAtom";
-import { currentSelectAnimationState } from "../state/atoms/CurrentSelect";
+import {
+  currentSelectAnimationState,
+  animationPlayingState,
+  animationCurrentTimeState,
+  animationSeekTimeState,
+  animationDurationState,
+} from "../state/atoms/CurrentSelect";
 import { selectedMaterialNameState, materialPropertiesState } from "../state/atoms/ModelInfo";
 
 // hooks
@@ -25,9 +31,24 @@ import { useModelUpload } from "../hooks/useModelUpload";
 // styles
 import styles from "../styles/components/viewer.module.scss";
 
+const createThrottle = (callback, interval) => {
+  let lastTime = 0;
+  return (...arguments_) => {
+    const now = performance.now();
+    if (now - lastTime >= interval) {
+      lastTime = now;
+      callback(...arguments_);
+    }
+  };
+};
+
 const ThreeViewer = ({ currentResizeTexture = {} }) => {
   const filePath = useRecoilValue(filePathState);
   const currentSelectAnimation = useRecoilValue(currentSelectAnimationState);
+  const isPlaying = useRecoilValue(animationPlayingState);
+  const [seekTime, setSeekTime] = useRecoilState(animationSeekTimeState);
+  const setAnimationCurrentTime = useSetRecoilState(animationCurrentTimeState);
+  const setAnimationDuration = useSetRecoilState(animationDurationState);
   const selectedMaterialName = useRecoilValue(selectedMaterialNameState);
   const materialProperties = useRecoilValue(materialPropertiesState);
   const { onChangeFile } = useModelUpload();
@@ -43,6 +64,9 @@ const ThreeViewer = ({ currentResizeTexture = {} }) => {
   const animationClipsRef = useRef([]);
   const clockRef = useRef(new THREE.Clock());
   const materialsRef = useRef([]);
+  const isPlayingRef = useRef(true);
+  const animationDurationRef = useRef(0);
+  const throttledSetTimeRef = useRef(null);
   const onChangeFileRef = useRef(onChangeFile);
 
   const [isDragging, setIsDragging] = useState(false);
@@ -52,6 +76,16 @@ const ThreeViewer = ({ currentResizeTexture = {} }) => {
   useEffect(() => {
     onChangeFileRef.current = onChangeFile;
   }, [onChangeFile]);
+
+  useEffect(() => {
+    isPlayingRef.current = isPlaying;
+  }, [isPlaying]);
+
+  useEffect(() => {
+    throttledSetTimeRef.current = createThrottle((time) => {
+      setAnimationCurrentTime(time);
+    }, 100);
+  }, [setAnimationCurrentTime]);
 
   // Three.js初期化
   useEffect(() => {
@@ -168,7 +202,16 @@ const ThreeViewer = ({ currentResizeTexture = {} }) => {
       const delta = clockRef.current.getDelta();
 
       if (mixerRef.current) {
-        mixerRef.current.update(delta);
+        if (isPlayingRef.current) {
+          mixerRef.current.update(delta);
+          if (throttledSetTimeRef.current) {
+            const duration = animationDurationRef.current;
+            const time = duration > 0
+              ? mixerRef.current.time % duration
+              : mixerRef.current.time;
+            throttledSetTimeRef.current(time);
+          }
+        }
       }
 
       controls.update();
@@ -290,6 +333,11 @@ const ThreeViewer = ({ currentResizeTexture = {} }) => {
         }
 
         // アニメーション設定
+        setAnimationCurrentTime(0);
+        animationDurationRef.current = 0;
+        setAnimationDuration(0);
+        setSeekTime(null);
+
         if (gltf.animations && gltf.animations.length > 0) {
           mixerRef.current = new THREE.AnimationMixer(model);
           animationActionsRef.current = {};
@@ -330,15 +378,32 @@ const ThreeViewer = ({ currentResizeTexture = {} }) => {
     });
 
     // 選択されたアニメーションをフェードインして再生
+    let maxDuration = 0;
     selectedAnimations.forEach((animationName) => {
       const action = animationActionsRef.current[animationName];
       if (action) {
         action.reset();
         action.fadeIn(0.5);
         action.play();
+        if (action.getClip().duration > maxDuration) {
+          maxDuration = action.getClip().duration;
+        }
       }
     });
-  }, [currentSelectAnimation]);
+    animationDurationRef.current = maxDuration;
+    setAnimationDuration(maxDuration);
+  }, [currentSelectAnimation, setAnimationDuration]);
+
+  // シーク制御
+  useEffect(() => {
+    if (seekTime === null || !mixerRef.current) return;
+    mixerRef.current.setTime(seekTime);
+    setAnimationCurrentTime(seekTime);
+    setSeekTime(null);
+    if (rendererRef.current && sceneRef.current && cameraRef.current) {
+      rendererRef.current.render(sceneRef.current, cameraRef.current);
+    }
+  }, [seekTime, setSeekTime, setAnimationCurrentTime]);
 
   // テクスチャの動的変更
   useEffect(() => {
