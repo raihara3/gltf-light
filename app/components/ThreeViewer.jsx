@@ -109,7 +109,7 @@ const ThreeViewer = ({ currentResizeTexture = {} }) => {
 
     // Camera
     const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
-    camera.position.set(2, 2, 2);
+    camera.position.set(0, 0, 3);
     cameraRef.current = camera;
 
     // Renderer
@@ -328,7 +328,7 @@ const ThreeViewer = ({ currentResizeTexture = {} }) => {
         const cameraZ = Math.abs(maxDim / 2 / Math.tan(fov / 2));
         const distance = cameraZ * 1.5;
 
-        cameraRef.current.position.set(distance, distance * 0.5, distance);
+        cameraRef.current.position.set(0, center.y, distance);
         cameraRef.current.lookAt(center);
         controlsRef.current.target.copy(center);
         controlsRef.current.update();
