@@ -25,7 +25,7 @@ export function useModelUpload() {
   const setAnimations = useSetRecoilState(animationsState);
   const setPolygonCount = useSetRecoilState(polygonCountState);
   const setCurrentSelectAnimation = useSetRecoilState(
-    currentSelectAnimationState
+    currentSelectAnimationState,
   );
   const setMaterials = useSetRecoilState(materialsState);
   const setTextures = useSetRecoilState(texturesState);
@@ -48,7 +48,9 @@ export function useModelUpload() {
         gltfModel.load(upload3DModel.filePath).then(() => {
           const animations = gltfModel.getAnimations();
           setAnimations(animations);
-          setCurrentSelectAnimation(animations[0]);
+          if (animations.length > 0) {
+            setCurrentSelectAnimation(animations[0].name);
+          }
           setPolygonCount(gltfModel.getPolygonCount());
 
           const materials = gltfModel.getMaterials();
@@ -77,7 +79,7 @@ export function useModelUpload() {
       setPolygonCount,
       setTextures,
       setUpload3DModelSelector,
-    ]
+    ],
   );
 
   return { onChangeFile };
