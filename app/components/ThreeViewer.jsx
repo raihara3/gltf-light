@@ -357,6 +357,16 @@ const ThreeViewer = ({ currentResizeTexture = {} }) => {
             const action = mixerRef.current.clipAction(clip);
             animationActionsRef.current[clip.name] = action;
           });
+
+          // 1つ目のアニメーションを自動再生
+          const firstClip = gltf.animations[0];
+          const firstAction = animationActionsRef.current[firstClip.name];
+          if (firstAction) {
+            firstAction.reset();
+            firstAction.play();
+            animationDurationRef.current = firstClip.duration;
+            setAnimationDuration(firstClip.duration);
+          }
         } else {
           animationClipsRef.current = [];
         }
