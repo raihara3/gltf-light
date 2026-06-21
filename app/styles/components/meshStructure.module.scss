@@ -1,69 +1,17 @@
 @import "../variables";
 @import "../mixin/animation";
 
-.panel {
-  display: flex;
-  flex-direction: column;
-  position: absolute;
-  top: 35px;
-  right: 0;
-  z-index: 10;
-  width: 280px;
-  max-width: 32vw;
-  max-height: calc(100% - 50px);
-  border: solid 1px $blue;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
-  background: rgba($bg-color, 0.92);
-}
-
-.panelHeader {
+.toggle {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 6px 10px;
-  border-bottom: solid 1px $blue;
-  background: rgba($dark-blue, 0.9);
+  gap: 6px;
+  margin: 2px 0 6px;
   color: $light-blue;
-  font-size: 12px;
-}
-
-.panelTitle {
-  margin: 0;
-  color: $light-blue;
-  font-weight: bold;
-  font-size: 12px;
-}
-
-.closeButton {
-  padding: 2px 6px;
-  border: none;
-  background: transparent;
-  color: $light-blue;
-  font-size: 14px;
-  line-height: 1;
+  font-size: 11px;
   cursor: pointer;
 
-  &:hover {
-    opacity: 0.7;
-    @include ease-animation;
-  }
-
-  &:focus-visible {
-    outline: solid 2px $light-blue;
-  }
-}
-
-.treeContainer {
-  flex: 1;
-  padding: 6px 0;
-  overflow-y: auto;
-
-  &::-webkit-scrollbar {
-    width: 6px;
-  }
-
-  &::-webkit-scrollbar-thumb {
-    background: rgba($light-blue, 0.4);
+  input {
+    cursor: pointer;
   }
 }
 
@@ -81,7 +29,7 @@
   display: flex;
   align-items: center;
   gap: 4px;
-  padding: 3px 8px;
+  padding: 3px 4px;
   border-left: solid 3px transparent;
   color: $light-blue;
   font-size: 12px;
@@ -141,11 +89,14 @@
   flex-wrap: wrap;
   gap: 4px;
   list-style: none;
-  margin: 2px 0 4px 28px;
+  margin: 2px 0 4px 24px;
   padding: 0;
 }
 
 .materialChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
   padding: 1px 6px;
   border: solid 1px rgba($light-blue, 0.4);
   border-radius: 8px;
@@ -153,6 +104,28 @@
   color: $light-blue;
   font-size: 10px;
   white-space: nowrap;
+  cursor: pointer;
+
+  &:hover {
+    border-color: $light-blue;
+    @include ease-animation;
+  }
+
+  &:focus-visible {
+    outline: solid 2px $light-blue;
+    outline-offset: 1px;
+  }
+}
+
+.materialChipSelected {
+  border-color: $light-blue;
+  background: rgba($light-blue, 0.25);
+  color: $white;
+}
+
+.materialChipLabel {
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .children {

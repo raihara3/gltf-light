@@ -40,9 +40,6 @@ import { useModelUpload } from "../hooks/useModelUpload";
 // utils
 import { buildMeshTree } from "../utils/buildMeshTree";
 
-// components
-import MeshStructurePanel from "./viewer/MeshStructurePanel";
-
 // styles
 import styles from "../styles/components/viewer.module.scss";
 
@@ -664,11 +661,7 @@ const ThreeViewer = ({ currentResizeTexture = {} }) => {
     setIsCaptureMode((previous) => !previous);
   }, []);
 
-  const toggleDetailMode = useCallback(() => {
-    setDetailModeEnabled((previous) => !previous);
-  }, [setDetailModeEnabled]);
-
-  // Pointer-based mesh picking for Detail Mode.
+  // Pointer-based mesh picking, gated by the sidebar viewer-picking toggle.
   useEffect(() => {
     if (!detailModeEnabled) return;
     const renderer = rendererRef.current;
@@ -725,30 +718,28 @@ const ThreeViewer = ({ currentResizeTexture = {} }) => {
     const model = modelRef.current;
     if (!outlinePass) return;
 
-    if (!detailModeEnabled || !selectedMeshUuid || !model) {
+    if (!selectedMeshUuid || !model) {
       outlinePass.selectedObjects = [];
       return;
     }
 
     const targetMesh = model.getObjectByProperty("uuid", selectedMeshUuid);
     outlinePass.selectedObjects = targetMesh ? [targetMesh] : [];
-  }, [selectedMeshUuid, detailModeEnabled]);
+  }, [selectedMeshUuid]);
 
-  // Reset Detail Mode state when toggling off.
+  // Allow ESC to disable viewer picking while it is active.
   useEffect(() => {
-    if (detailModeEnabled) {
-      if (modelRef.current) {
-        setMeshTree(buildMeshTree(modelRef.current));
+    if (!detailModeEnabled) return;
+    const handleKeyDown = (event) => {
+      if (event.key === "Escape") {
+        setDetailModeEnabled(false);
       }
-      return;
-    }
-
-    if (outlinePassRef.current) {
-      outlinePassRef.current.selectedObjects = [];
-    }
-    setSelectedMeshUuid(null);
-    setMeshTree(null);
-  }, [detailModeEnabled, setMeshTree, setSelectedMeshUuid]);
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [detailModeEnabled, setDetailModeEnabled]);
 
   const handleCapture = useCallback(() => {
     const renderer = rendererRef.current;
@@ -785,14 +776,6 @@ const ThreeViewer = ({ currentResizeTexture = {} }) => {
           title={isCaptureMode ? "Exit Capture Mode" : "Enter Capture Mode"}
         >
           📷
-        </button>
-        <button
-          className={`${styles.modeToggleButton} ${detailModeEnabled ? styles.detailModeActive : ""}`}
-          onClick={toggleDetailMode}
-          title={detailModeEnabled ? "Exit Detail Mode" : "Enter Detail Mode"}
-          aria-pressed={detailModeEnabled}
-        >
-          🔍
         </button>
         <button
           className={`${styles.modeToggleButton} ${isLightMode ? styles.lightModeActive : ""}`}
@@ -862,7 +845,6 @@ const ThreeViewer = ({ currentResizeTexture = {} }) => {
           </div>
         )}
         <div ref={mountRef} className={styles.viewer} />
-        {detailModeEnabled && <MeshStructurePanel />}
       </div>
     </Fragment>
   );

@@ -7,6 +7,7 @@ import Statistics from "../components/sidebar/Statistics";
 import Animations from "../components/sidebar/Animations";
 import AnimationsMulti from "../components/sidebar/AnimationsMulti";
 import Materials from "../components/sidebar/Materials";
+import MeshStructure from "../components/sidebar/MeshStructure";
 import Textures from "../components/sidebar/Textures";
 
 // styles
@@ -23,6 +24,7 @@ const Sidebar = () => {
       <Statistics />
       <AnimationComponent />
       <Materials />
+      <MeshStructure />
       <Textures />
     </aside>
   );
