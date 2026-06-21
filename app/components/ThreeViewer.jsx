@@ -509,51 +509,49 @@ const ThreeViewer = ({ currentResizeTexture = {} }) => {
   }, [seekTime, setSeekTime, setAnimationCurrentTime]);
 
   // テクスチャの動的変更
-  useEffect(() => {
+    useEffect(() => {
     if (
       !currentResizeTexture ||
       !currentResizeTexture.src ||
-      !currentResizeTexture.uuid
+      !currentResizeTexture.materialName
     )
       return;
 
-    const image = new Image();
-    image.onload = () => {
-      // Mutate the existing THREE.Texture in place so every material/slot
-      // referencing it picks up the new image. This avoids leaving the
-      // original texture reachable from other map slots, which would cause
-      // GLTFExporter to write both versions into the GLB.
-      const slots = [
-        "map",
-        "normalMap",
-        "roughnessMap",
-        "metalnessMap",
-        "emissiveMap",
-        "aoMap",
-        "displacementMap",
-        "alphaMap",
-        "envMap",
-      ];
-      const updatedUuids = new Set();
-      materialsRef.current.forEach((material) => {
-        slots.forEach((slot) => {
-          const targetTexture = material[slot];
-          if (!targetTexture || targetTexture.uuid !== currentResizeTexture.uuid) return;
-          if (!updatedUuids.has(targetTexture.uuid)) {
-            targetTexture.image = image;
-            targetTexture.name = currentResizeTexture.name;
-            targetTexture.needsUpdate = true;
-            updatedUuids.add(targetTexture.uuid);
-          }
-          material.needsUpdate = true;
-        });
-      });
+    const textureLoader = new THREE.TextureLoader();
+    textureLoader.load(currentResizeTexture.src, (texture) => {
+      texture.colorSpace = THREE.SRGBColorSpace;
 
-      if (composerRef.current) {
-        composerRef.current.render();
-      }
-    };
-    image.src = currentResizeTexture.src;
+      // テクスチャのUV設定を適切に設定
+      texture.wrapS = THREE.RepeatWrapping;
+      texture.wrapT = THREE.RepeatWrapping;
+      texture.repeat.set(1, 1);
+      texture.offset.set(0, 0);
+
+      // フィルタリング設定
+      texture.minFilter = THREE.LinearMipmapLinearFilter;
+      texture.magFilter = THREE.LinearFilter;
+
+      // テクスチャが反転しないように設定
+      texture.flipY = false;
+
+      materialsRef.current.forEach((material) => {
+        if (material.name === currentResizeTexture.materialName) {
+          // 元のテクスチャの設定を保持
+          const originalTexture = material.map;
+          if (originalTexture) {
+            // 元のテクスチャのUV設定をコピー
+            texture.wrapS = originalTexture.wrapS;
+            texture.wrapT = originalTexture.wrapT;
+            texture.repeat.copy(originalTexture.repeat);
+            texture.offset.copy(originalTexture.offset);
+            texture.flipY = originalTexture.flipY;
+          }
+
+          material.map = texture;
+          material.needsUpdate = true;
+        }
+      });
+    });
   }, [currentResizeTexture]);
 
   // マテリアルプロパティの動的変更
