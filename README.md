@@ -20,6 +20,21 @@ You can start editing the page by modifying `app/page.tsx`. The page auto-update
 
 This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
 
+## Mesh Structure
+
+The left sidebar always shows a `Mesh Structure` section listing the scene graph of the loaded glTF/GLB. The tree starts fully collapsed; expand a node manually via its caret to walk the hierarchy. Selecting a node in the tree highlights the corresponding mesh in the viewer with an outline. Each mesh node lists the materials it uses; clicking a material chip selects that material in the `Materials` section, opening its property sliders. The two sections stay in sync in both directions.
+
+Just under the section heading, a `Click viewer to select` checkbox toggles a viewer-side picking mode. While enabled, clicking a mesh directly in the 3D scene selects it. The tree automatically expands the ancestor path so that the picked mesh becomes visible and highlighted. Press `ESC` to disable the picking mode. Selection from the sidebar tree works independently and does not require the toggle.
+
+## Testing
+
+Tests run on Vitest with Testing Library and jsdom.
+
+```bash
+npm test          # run the suite once
+npm run test:watch # re-run on file changes
+```
+
 ## Learn More
 
 To learn more about Next.js, take a look at the following resources:

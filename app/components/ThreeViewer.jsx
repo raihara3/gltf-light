@@ -13,6 +13,10 @@ import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 import { GLTFExporter } from "three/examples/jsm/exporters/GLTFExporter";
 import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment";
+import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer";
+import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass";
+import { OutlinePass } from "three/examples/jsm/postprocessing/OutlinePass";
+import { OutputPass } from "three/examples/jsm/postprocessing/OutputPass";
 
 // states
 import { filePathState } from "../state/atoms/Upload3DModelAtom";
@@ -24,9 +28,17 @@ import {
   animationDurationState,
 } from "../state/atoms/CurrentSelect";
 import { selectedMaterialNameState, materialPropertiesState } from "../state/atoms/ModelInfo";
+import {
+  detailModeEnabledState,
+  meshTreeState,
+  selectedMeshUuidState,
+} from "../state/atoms/MeshTree";
 
 // hooks
 import { useModelUpload } from "../hooks/useModelUpload";
+
+// utils
+import { buildMeshTree } from "../utils/buildMeshTree";
 
 // styles
 import styles from "../styles/components/viewer.module.scss";
@@ -51,6 +63,9 @@ const ThreeViewer = ({ currentResizeTexture = {} }) => {
   const setAnimationDuration = useSetRecoilState(animationDurationState);
   const selectedMaterialName = useRecoilValue(selectedMaterialNameState);
   const materialProperties = useRecoilValue(materialPropertiesState);
+  const [detailModeEnabled, setDetailModeEnabled] = useRecoilState(detailModeEnabledState);
+  const setMeshTree = useSetRecoilState(meshTreeState);
+  const [selectedMeshUuid, setSelectedMeshUuid] = useRecoilState(selectedMeshUuidState);
   const { onChangeFile } = useModelUpload();
 
   const mountRef = useRef(null);
@@ -71,6 +86,12 @@ const ThreeViewer = ({ currentResizeTexture = {} }) => {
 
   const ambientLightRef = useRef(null);
   const directionalLightRef = useRef(null);
+
+  const composerRef = useRef(null);
+  const outlinePassRef = useRef(null);
+  const raycasterRef = useRef(new THREE.Raycaster());
+  const ndcRef = useRef(new THREE.Vector2());
+  const pointerDownPosRef = useRef(null);
 
   const [isDragging, setIsDragging] = useState(false);
   const [isLightMode, setIsLightMode] = useState(false);
@@ -205,6 +226,59 @@ const ThreeViewer = ({ currentResizeTexture = {} }) => {
     plane.name = "groundPlane";
     scene.add(plane);
 
+    // Postprocessing for the Detail Mode outline highlight.
+    const composer = new EffectComposer(renderer);
+    composer.setSize(width, height);
+    composer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    composer.addPass(new RenderPass(scene, camera));
+
+    const outlinePass = new OutlinePass(
+      new THREE.Vector2(width, height),
+      scene,
+      camera
+    );
+    outlinePass.visibleEdgeColor.set("#aaff00");
+    outlinePass.hiddenEdgeColor.set("#aaff00");
+    outlinePass.edgeStrength = 4;
+    outlinePass.edgeThickness = 1;
+    outlinePass.edgeGlow = 0;
+    outlinePass.pulsePeriod = 0;
+
+    // Workaround: OutlinePass hides every non-selected mesh during its mask
+    // render. If the selected mesh is a descendant of another mesh, that
+    // ancestor gets hidden and the selected child therefore does not draw
+    // either, so the outline never appears. Lift each selected object to the
+    // render scene root (preserving world transform) just for the pass and
+    // restore the original parent immediately after.
+    const originalOutlineRender = outlinePass.render.bind(outlinePass);
+    outlinePass.render = function (renderer, writeBuffer, readBuffer, deltaTime, maskActive) {
+      if (this.selectedObjects.length === 0) {
+        originalOutlineRender(renderer, writeBuffer, readBuffer, deltaTime, maskActive);
+        return;
+      }
+      const reparents = [];
+      this.selectedObjects.forEach((object) => {
+        const originalParent = object.parent;
+        if (originalParent && originalParent !== this.renderScene) {
+          reparents.push([object, originalParent]);
+          this.renderScene.attach(object);
+        }
+      });
+      try {
+        originalOutlineRender(renderer, writeBuffer, readBuffer, deltaTime, maskActive);
+      } finally {
+        reparents.forEach(([object, originalParent]) => {
+          originalParent.attach(object);
+        });
+      }
+    };
+
+    composer.addPass(outlinePass);
+    composer.addPass(new OutputPass());
+
+    composerRef.current = composer;
+    outlinePassRef.current = outlinePass;
+
     // Animation loop
     const animate = () => {
       requestAnimationFrame(animate);
@@ -225,7 +299,7 @@ const ThreeViewer = ({ currentResizeTexture = {} }) => {
       }
 
       controls.update();
-      renderer.render(scene, camera);
+      composer.render();
     };
     animate();
 
@@ -237,6 +311,8 @@ const ThreeViewer = ({ currentResizeTexture = {} }) => {
       camera.aspect = width / height;
       camera.updateProjectionMatrix();
       renderer.setSize(width, height);
+      composer.setSize(width, height);
+      outlinePass.setSize(width, height);
     };
     window.addEventListener("resize", handleResize);
 
@@ -248,6 +324,7 @@ const ThreeViewer = ({ currentResizeTexture = {} }) => {
       canvas.removeEventListener("dragleave", canvasDragLeave);
       canvas.removeEventListener("drop", canvasDrop);
 
+      composer.dispose();
       renderer.dispose();
       pmremGenerator.dispose();
       if (mountRef.current && renderer.domElement) {
@@ -266,6 +343,12 @@ const ThreeViewer = ({ currentResizeTexture = {} }) => {
       (gltf) => {
         // 既存モデルの削除
         if (modelRef.current) {
+          if (outlinePassRef.current) {
+            outlinePassRef.current.selectedObjects = [];
+          }
+          setMeshTree(null);
+          setSelectedMeshUuid(null);
+
           sceneRef.current.remove(modelRef.current);
           modelRef.current.traverse((child) => {
             if (child.geometry) child.geometry.dispose();
@@ -371,18 +454,18 @@ const ThreeViewer = ({ currentResizeTexture = {} }) => {
           animationClipsRef.current = [];
         }
 
-        // モデル読み込み完了後に強制レンダリング
-        console.log("Force rendering after model load");
-        if (rendererRef.current && sceneRef.current && cameraRef.current) {
-          rendererRef.current.render(sceneRef.current, cameraRef.current);
+        if (composerRef.current) {
+          composerRef.current.render();
         }
+
+        setMeshTree(buildMeshTree(model));
       },
       undefined,
       (error) => {
         console.error("An error occurred loading the model:", error);
       }
     );
-  }, [filePath]);
+  }, [filePath, setMeshTree, setSelectedMeshUuid]);
 
   // アニメーション制御（複数同時再生対応）
   useEffect(() => {
@@ -420,13 +503,13 @@ const ThreeViewer = ({ currentResizeTexture = {} }) => {
     mixerRef.current.setTime(seekTime);
     setAnimationCurrentTime(seekTime);
     setSeekTime(null);
-    if (rendererRef.current && sceneRef.current && cameraRef.current) {
-      rendererRef.current.render(sceneRef.current, cameraRef.current);
+    if (composerRef.current) {
+      composerRef.current.render();
     }
   }, [seekTime, setSeekTime, setAnimationCurrentTime]);
 
   // テクスチャの動的変更
-  useEffect(() => {
+    useEffect(() => {
     if (
       !currentResizeTexture ||
       !currentResizeTexture.src ||
@@ -493,8 +576,8 @@ const ThreeViewer = ({ currentResizeTexture = {} }) => {
     targetMaterial.needsUpdate = true;
 
     // レンダリングを強制更新
-    if (rendererRef.current && sceneRef.current && cameraRef.current) {
-      rendererRef.current.render(sceneRef.current, cameraRef.current);
+    if (composerRef.current) {
+      composerRef.current.render();
     }
   }, [selectedMaterialName, materialProperties]);
 
@@ -576,18 +659,98 @@ const ThreeViewer = ({ currentResizeTexture = {} }) => {
     setIsCaptureMode((previous) => !previous);
   }, []);
 
+  // Pointer-based mesh picking, gated by the sidebar viewer-picking toggle.
+  useEffect(() => {
+    if (!detailModeEnabled) return;
+    const renderer = rendererRef.current;
+    if (!renderer) return;
+    const canvas = renderer.domElement;
+
+    const handlePointerDown = (event) => {
+      pointerDownPosRef.current = { x: event.clientX, y: event.clientY };
+    };
+
+    const handlePointerUp = (event) => {
+      const downPos = pointerDownPosRef.current;
+      pointerDownPosRef.current = null;
+      if (!downPos) return;
+      const dx = event.clientX - downPos.x;
+      const dy = event.clientY - downPos.y;
+      if (Math.hypot(dx, dy) >= 4) return;
+
+      const camera = cameraRef.current;
+      const model = modelRef.current;
+      if (!camera || !model) return;
+
+      const rect = canvas.getBoundingClientRect();
+      ndcRef.current.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+      ndcRef.current.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+
+      raycasterRef.current.setFromCamera(ndcRef.current, camera);
+      const intersects = raycasterRef.current.intersectObject(model, true);
+      const hit = intersects.find(
+        (intersection) =>
+          intersection.object.isMesh && intersection.object.name !== "groundPlane"
+      );
+      if (hit) {
+        setSelectedMeshUuid((previous) =>
+          previous === hit.object.uuid ? null : hit.object.uuid
+        );
+      } else {
+        setSelectedMeshUuid(null);
+      }
+    };
+
+    canvas.addEventListener("pointerdown", handlePointerDown);
+    canvas.addEventListener("pointerup", handlePointerUp);
+
+    return () => {
+      canvas.removeEventListener("pointerdown", handlePointerDown);
+      canvas.removeEventListener("pointerup", handlePointerUp);
+    };
+  }, [detailModeEnabled, setSelectedMeshUuid]);
+
+  // Sync the outline highlight with the selected mesh.
+  useEffect(() => {
+    const outlinePass = outlinePassRef.current;
+    const model = modelRef.current;
+    if (!outlinePass) return;
+
+    if (!selectedMeshUuid || !model) {
+      outlinePass.selectedObjects = [];
+      return;
+    }
+
+    const targetMesh = model.getObjectByProperty("uuid", selectedMeshUuid);
+    outlinePass.selectedObjects = targetMesh ? [targetMesh] : [];
+  }, [selectedMeshUuid]);
+
+  // Allow ESC to disable viewer picking while it is active.
+  useEffect(() => {
+    if (!detailModeEnabled) return;
+    const handleKeyDown = (event) => {
+      if (event.key === "Escape") {
+        setDetailModeEnabled(false);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [detailModeEnabled, setDetailModeEnabled]);
+
   const handleCapture = useCallback(() => {
     const renderer = rendererRef.current;
+    const composer = composerRef.current;
     const scene = sceneRef.current;
-    const camera = cameraRef.current;
-    if (!renderer || !scene || !camera) return;
+    if (!renderer || !composer || !scene) return;
 
     const groundPlane = scene.getObjectByName("groundPlane");
     const previousGroundVisible = groundPlane?.visible;
     if (groundPlane) groundPlane.visible = false;
 
     try {
-      renderer.render(scene, camera);
+      composer.render();
       renderer.domElement.toBlob((blob) => {
         if (!blob) return;
         const url = URL.createObjectURL(blob);

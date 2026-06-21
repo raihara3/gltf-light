@@ -1,6 +1,6 @@
 // lib
 import { memo, Fragment, useCallback } from 'react';
-import { useRecoilState } from 'recoil';
+import { useRecoilState, useRecoilValue } from 'recoil';
 
 // states
 import {
@@ -10,20 +10,18 @@ import {
   updateMaterialProperty
 } from "../../state/atoms/ModelInfo";
 
+// hooks
+import { useSelectMaterialByName } from "../../hooks/useSelectMaterialByName";
+
 const Materials = () => {
   const [materials, setMaterials] = useRecoilState(materialsState);
-  const [selectedMaterialName, setSelectedMaterialName] = useRecoilState(selectedMaterialNameState);
+  const selectedMaterialName = useRecoilValue(selectedMaterialNameState);
   const [materialProperties, setMaterialProperties] = useRecoilState(materialPropertiesState);
+  const selectMaterialByName = useSelectMaterialByName();
 
   const handleMaterialClick = useCallback((material) => {
-    setSelectedMaterialName(material.name);
-
-    // 選択したマテリアルの現在の値をセット
-    setMaterialProperties({
-      roughness: material.roughness !== undefined ? material.roughness : 0.5,
-      metalness: material.metalness !== undefined ? material.metalness : 0.5,
-    });
-  }, [setSelectedMaterialName, setMaterialProperties]);
+    selectMaterialByName(material.name);
+  }, [selectMaterialByName]);
 
   const handleRoughnessChange = useCallback((event) => {
     const value = parseFloat(event.target.value);
