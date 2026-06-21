@@ -20,6 +20,19 @@ You can start editing the page by modifying `app/page.tsx`. The page auto-update
 
 This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
 
+## Detail Mode
+
+Toggle the magnifier button in the viewer to enter Detail Mode. While active, the right-side overlay shows the mesh structure tree of the loaded glTF/GLB. Clicking a mesh in the 3D scene highlights the corresponding node in the tree and emphasizes the mesh via its emissive color. Press `ESC` or click the close button to leave the mode.
+
+## Testing
+
+Tests run on Vitest with Testing Library and jsdom.
+
+```bash
+npm test          # run the suite once
+npm run test:watch # re-run on file changes
+```
+
 ## Learn More
 
 To learn more about Next.js, take a look at the following resources:
