@@ -13,6 +13,9 @@ import {
 // hooks
 import { useSelectMaterialByName } from "../../hooks/useSelectMaterialByName";
 
+// components
+import MaterialIcon from "../icons/MaterialIcon";
+
 const Materials = () => {
   const [materials, setMaterials] = useRecoilState(materialsState);
   const selectedMaterialName = useRecoilValue(selectedMaterialNameState);
@@ -55,7 +58,8 @@ const Materials = () => {
           onClick={() => handleMaterialClick(material)}
           style={{
             cursor: 'pointer',
-            backgroundColor: selectedMaterialName === material.name ? '#444' : 'transparent',
+            backgroundColor: selectedMaterialName === material.name ? 'rgba(144, 188, 208, 0.25)' : 'transparent',
+            color: selectedMaterialName === material.name ? '#ffffff' : undefined,
             padding: '4px 8px',
             borderRadius: '4px',
             display: 'flex',
@@ -63,20 +67,9 @@ const Materials = () => {
             gap: '6px',
           }}
         >
-          <svg
-            width="14"
-            height="14"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            style={{ flexShrink: 0 }}
-          >
-            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
-          </svg>
+          <span style={{ display: 'inline-flex', flexShrink: 0 }}>
+            <MaterialIcon size={14} />
+          </span>
           <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{material.name}</span>
         </div>
       ))}

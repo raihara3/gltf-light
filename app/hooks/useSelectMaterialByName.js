@@ -9,11 +9,16 @@ import {
 
 export function useSelectMaterialByName() {
   const materials = useRecoilValue(materialsState);
+  const selectedMaterialName = useRecoilValue(selectedMaterialNameState);
   const setSelectedMaterialName = useSetRecoilState(selectedMaterialNameState);
   const setMaterialProperties = useSetRecoilState(materialPropertiesState);
 
   return useCallback(
     (materialName) => {
+      if (selectedMaterialName === materialName) {
+        setSelectedMaterialName(null);
+        return;
+      }
       const material = materials.find((entry) => entry.name === materialName);
       setSelectedMaterialName(materialName);
       setMaterialProperties({
@@ -21,6 +26,6 @@ export function useSelectMaterialByName() {
         metalness: material?.metalness !== undefined ? material.metalness : 0.5,
       });
     },
-    [materials, setSelectedMaterialName, setMaterialProperties]
+    [materials, selectedMaterialName, setSelectedMaterialName, setMaterialProperties]
   );
 }
