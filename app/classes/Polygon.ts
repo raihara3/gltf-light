@@ -34,15 +34,15 @@ class Polygon {
   validate(): Log[] {
     const WARNING_COUNT = 100000;
     const ERROR_COUNT = 300000;
-    if(this.polygonCount > WARNING_COUNT) {
-      return [Logger.log({
-        logType: LogType.WARNING,
-        message: `Too many polygons. It is recommended that unnecessary polygons be reduced.(Recommendation is under ${WARNING_COUNT.toLocaleString()})`
-      })];
-    }else if(this.polygonCount > ERROR_COUNT) {
+    if(this.polygonCount > ERROR_COUNT) {
       return [Logger.log({
         logType: LogType.ERROR,
         message: `Too much polygon. Will affect performance.(Recommendation is under ${ERROR_COUNT.toLocaleString()})`
+      })];
+    }else if(this.polygonCount > WARNING_COUNT) {
+      return [Logger.log({
+        logType: LogType.WARNING,
+        message: `Too many polygons. It is recommended that unnecessary polygons be reduced.(Recommendation is under ${WARNING_COUNT.toLocaleString()})`
       })];
     }
     return []
