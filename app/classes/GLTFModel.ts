@@ -50,6 +50,10 @@ class GLTFModel {
     return [];
   }
 
+  getCopyright(): string {
+    return this.model?.asset?.copyright ?? "";
+  }
+
   getMaterials() {
     if(!this.model) return [];
     return this.modelMaterial.get(this.model);

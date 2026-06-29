@@ -8,6 +8,8 @@ import {
   polygonCountState,
   materialsState,
   texturesState,
+  copyrightState,
+  copyrightLockedState,
 } from "../state/atoms/ModelInfo";
 import { logsState } from "../state/atoms/Logs";
 import { upload3DModelSelector } from "../state/selectors/Upload3DModelSelector";
@@ -29,6 +31,8 @@ export function useModelUpload() {
   );
   const setMaterials = useSetRecoilState(materialsState);
   const setTextures = useSetRecoilState(texturesState);
+  const setCopyright = useSetRecoilState(copyrightState);
+  const setCopyrightLocked = useSetRecoilState(copyrightLockedState);
   const [logs, setLogs] = useRecoilState(logsState);
 
   const upload3DModel = new Upload3DModel();
@@ -53,6 +57,10 @@ export function useModelUpload() {
           }
           setPolygonCount(gltfModel.getPolygonCount());
 
+          const copyright = gltfModel.getCopyright();
+          setCopyright(copyright);
+          setCopyrightLocked(copyright !== "");
+
           const materials = gltfModel.getMaterials();
           setMaterials(materials);
 
@@ -73,6 +81,8 @@ export function useModelUpload() {
     [
       logs,
       setAnimations,
+      setCopyright,
+      setCopyrightLocked,
       setCurrentSelectAnimation,
       setLogs,
       setMaterials,

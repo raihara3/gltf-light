@@ -1,0 +1,46 @@
+@import "../variables";
+@import "../mixin/animation";
+
+.copyrightField {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.copyrightInput {
+  flex: 1;
+  min-width: 0;
+  padding: 1px 4px;
+  border: solid 1px transparent;
+  box-sizing: border-box;
+  background: transparent;
+  color: $blue;
+  font: inherit;
+  font-weight: bold;
+  outline: none;
+  &::placeholder {
+    color: $blue;
+    opacity: 0.5;
+  }
+}
+
+.copyrightInputActive {
+  border-color: $light-blue;
+  background: $dark-blue;
+  color: $light-blue;
+}
+
+.copyrightEditButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px;
+  border: none;
+  background: transparent;
+  color: $blue;
+  cursor: pointer;
+  @include ease-animation;
+  &:hover {
+    color: $light-blue;
+  }
+}
