@@ -27,7 +27,11 @@ import {
   animationSeekTimeState,
   animationDurationState,
 } from "../state/atoms/CurrentSelect";
-import { selectedMaterialNameState, materialPropertiesState } from "../state/atoms/ModelInfo";
+import {
+  selectedMaterialNameState,
+  materialPropertiesState,
+  copyrightState,
+} from "../state/atoms/ModelInfo";
 import {
   detailModeEnabledState,
   meshTreeState,
@@ -39,6 +43,7 @@ import { useModelUpload } from "../hooks/useModelUpload";
 
 // utils
 import { buildMeshTree } from "../utils/buildMeshTree";
+import { injectGlbCopyright } from "../utils/injectGlbCopyright";
 
 // styles
 import styles from "../styles/components/viewer.module.scss";
@@ -63,6 +68,7 @@ const ThreeViewer = ({ currentResizeTexture = {} }) => {
   const setAnimationDuration = useSetRecoilState(animationDurationState);
   const selectedMaterialName = useRecoilValue(selectedMaterialNameState);
   const materialProperties = useRecoilValue(materialPropertiesState);
+  const copyright = useRecoilValue(copyrightState);
   const [detailModeEnabled, setDetailModeEnabled] = useRecoilState(detailModeEnabledState);
   const setMeshTree = useSetRecoilState(meshTreeState);
   const [selectedMeshUuid, setSelectedMeshUuid] = useRecoilState(selectedMeshUuidState);
@@ -594,7 +600,10 @@ const ThreeViewer = ({ currentResizeTexture = {} }) => {
     exporter.parse(
       modelRef.current,
       (gltf) => {
-        const blob = new Blob([gltf], { type: "application/octet-stream" });
+        const output = copyright
+          ? injectGlbCopyright(gltf, copyright)
+          : gltf;
+        const blob = new Blob([output], { type: "application/octet-stream" });
         const link = document.createElement("a");
         link.download = "gltf-light.glb";
         link.href = URL.createObjectURL(blob);
@@ -606,7 +615,7 @@ const ThreeViewer = ({ currentResizeTexture = {} }) => {
       },
       exportOptions
     );
-  }, []);
+  }, [copyright]);
 
   // ドラッグ&ドロップ
   const handleDragOver = useCallback((e) => {

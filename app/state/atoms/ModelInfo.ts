@@ -15,6 +15,16 @@ export const polygonCountState = atom<number>({
   default: 0,
 });
 
+export const copyrightState = atom<string>({
+  key: "copyright",
+  default: "",
+});
+
+export const copyrightLockedState = atom<boolean>({
+  key: "copyrightLocked",
+  default: false,
+});
+
 export const materialsState = atom<Material[]>({
   key: "materials",
   default: [],
