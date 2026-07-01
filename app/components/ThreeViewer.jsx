@@ -31,6 +31,10 @@ import {
   selectedMaterialNameState,
   materialPropertiesState,
   copyrightState,
+  polygonCountState,
+  polygonReductionRatioState,
+  hasSkinnedMeshState,
+  wireframeOverlayEnabledState,
 } from "../state/atoms/ModelInfo";
 import {
   detailModeEnabledState,
@@ -40,6 +44,9 @@ import {
 
 // hooks
 import { useModelUpload } from "../hooks/useModelUpload";
+
+// classes
+import ReducePolygon from "../classes/ReducePolygon";
 
 // utils
 import { buildMeshTree } from "../utils/buildMeshTree";
@@ -59,6 +66,21 @@ const createThrottle = (callback, interval) => {
   };
 };
 
+const countPolygons = (root) => {
+  let count = 0;
+  root.traverse((child) => {
+    if (child.isMesh && child.geometry) {
+      const geometry = child.geometry;
+      if (geometry.index) {
+        count += geometry.index.count / 3;
+      } else if (geometry.attributes.position) {
+        count += geometry.attributes.position.count / 3;
+      }
+    }
+  });
+  return count;
+};
+
 const ThreeViewer = ({ currentResizeTexture = {} }) => {
   const filePath = useRecoilValue(filePathState);
   const currentSelectAnimation = useRecoilValue(currentSelectAnimationState);
@@ -69,6 +91,10 @@ const ThreeViewer = ({ currentResizeTexture = {} }) => {
   const selectedMaterialName = useRecoilValue(selectedMaterialNameState);
   const materialProperties = useRecoilValue(materialPropertiesState);
   const copyright = useRecoilValue(copyrightState);
+  const polygonReductionRatio = useRecoilValue(polygonReductionRatioState);
+  const wireframeOverlayEnabled = useRecoilValue(wireframeOverlayEnabledState);
+  const setPolygonCount = useSetRecoilState(polygonCountState);
+  const setHasSkinnedMesh = useSetRecoilState(hasSkinnedMeshState);
   const [detailModeEnabled, setDetailModeEnabled] = useRecoilState(detailModeEnabledState);
   const setMeshTree = useSetRecoilState(meshTreeState);
   const [selectedMeshUuid, setSelectedMeshUuid] = useRecoilState(selectedMeshUuidState);
@@ -85,6 +111,11 @@ const ThreeViewer = ({ currentResizeTexture = {} }) => {
   const animationClipsRef = useRef([]);
   const clockRef = useRef(new THREE.Clock());
   const materialsRef = useRef([]);
+  const originalGeometriesRef = useRef(new Map());
+  const reducePolygonRef = useRef(new ReducePolygon());
+  const reduceTimeoutRef = useRef(null);
+  const wireframeGroupRef = useRef(null);
+  const wireframeEnabledRef = useRef(false);
   const isPlayingRef = useRef(true);
   const animationDurationRef = useRef(0);
   const throttledSetTimeRef = useRef(null);
@@ -120,6 +151,45 @@ const ThreeViewer = ({ currentResizeTexture = {} }) => {
       setAnimationCurrentTime(time);
     }, 100);
   }, [setAnimationCurrentTime]);
+
+  // モデルの各ポリゴンにワイヤーフレームを重ねて可視化する（Blenderの編集モード風）。
+  // エクスポート対象のモデルを汚さないよう、オーバーレイはシーン直下の別グループに置く。
+  const rebuildWireframeOverlay = useCallback(() => {
+    const scene = sceneRef.current;
+
+    if (wireframeGroupRef.current) {
+      wireframeGroupRef.current.traverse((child) => {
+        if (child.geometry) child.geometry.dispose();
+        if (child.material) child.material.dispose();
+      });
+      scene?.remove(wireframeGroupRef.current);
+      wireframeGroupRef.current = null;
+    }
+
+    const model = modelRef.current;
+    if (wireframeEnabledRef.current && scene && model) {
+      const group = new THREE.Group();
+      group.name = "wireframeOverlay";
+      model.updateWorldMatrix(true, true);
+      model.traverse((child) => {
+        if (!child.isMesh || !child.geometry) return;
+        const line = new THREE.LineSegments(
+          new THREE.WireframeGeometry(child.geometry),
+          new THREE.LineBasicMaterial({
+            color: 0x00e5ff,
+            transparent: true,
+            opacity: 0.5,
+          })
+        );
+        line.applyMatrix4(child.matrixWorld);
+        group.add(line);
+      });
+      scene.add(group);
+      wireframeGroupRef.current = group;
+    }
+
+    if (composerRef.current) composerRef.current.render();
+  }, []);
 
   // Three.js初期化
   useEffect(() => {
@@ -347,6 +417,12 @@ const ThreeViewer = ({ currentResizeTexture = {} }) => {
     loader.load(
       filePath,
       (gltf) => {
+        // 保留中のポリゴン削減タイマーが新モデルへ誤適用されるのを防ぐ
+        if (reduceTimeoutRef.current) {
+          clearTimeout(reduceTimeoutRef.current);
+          reduceTimeoutRef.current = null;
+        }
+
         // 既存モデルの削除
         if (modelRef.current) {
           if (outlinePassRef.current) {
@@ -356,6 +432,8 @@ const ThreeViewer = ({ currentResizeTexture = {} }) => {
           setSelectedMeshUuid(null);
 
           sceneRef.current.remove(modelRef.current);
+          originalGeometriesRef.current.forEach((geometry) => geometry.dispose());
+          originalGeometriesRef.current.clear();
           modelRef.current.traverse((child) => {
             if (child.geometry) child.geometry.dispose();
             if (child.material) {
@@ -407,6 +485,17 @@ const ThreeViewer = ({ currentResizeTexture = {} }) => {
           }
         });
         materialsRef.current = materials;
+
+        // ポリゴン削減で元に戻せるよう、読み込み時のジオメトリを退避する
+        originalGeometriesRef.current = new Map();
+        let hasSkinnedMesh = false;
+        model.traverse((child) => {
+          if (child.isMesh && child.geometry) {
+            originalGeometriesRef.current.set(child.uuid, child.geometry);
+            if (child.isSkinnedMesh) hasSkinnedMesh = true;
+          }
+        });
+        setHasSkinnedMesh(hasSkinnedMesh);
 
         // モデルをカメラフレームに収める
         const box = new THREE.Box3().setFromObject(model);
@@ -465,13 +554,65 @@ const ThreeViewer = ({ currentResizeTexture = {} }) => {
         }
 
         setMeshTree(buildMeshTree(model));
+        // 旧モデルのワイヤーフレームを片付け、必要なら新モデル用に作り直す
+        rebuildWireframeOverlay();
       },
       undefined,
       (error) => {
         console.error("An error occurred loading the model:", error);
       }
     );
-  }, [filePath, setMeshTree, setSelectedMeshUuid]);
+  }, [
+    filePath,
+    setMeshTree,
+    setSelectedMeshUuid,
+    setHasSkinnedMesh,
+    rebuildWireframeOverlay,
+  ]);
+
+  // ポリゴン削減（スライダー追従・重い処理なので少し遅延させて適用）
+  useEffect(() => {
+    if (!modelRef.current || originalGeometriesRef.current.size === 0) return;
+
+    if (reduceTimeoutRef.current) clearTimeout(reduceTimeoutRef.current);
+    reduceTimeoutRef.current = setTimeout(() => {
+      // 発火時点の最新モデルを対象にする（読み込み直後の入れ替えに追従）
+      const model = modelRef.current;
+      if (!model) return;
+
+      model.traverse((child) => {
+        if (!child.isMesh) return;
+        const original = originalGeometriesRef.current.get(child.uuid);
+        if (!original) return;
+
+        const previous = child.geometry;
+        const next =
+          polygonReductionRatio >= 1
+            ? original
+            : reducePolygonRef.current.simplify(original, polygonReductionRatio);
+        if (next === previous) return;
+
+        child.geometry = next;
+        // 元ジオメトリは退避済みなので、置き換えた中間ジオメトリのみ破棄する
+        if (previous !== original) previous.dispose();
+      });
+
+      setPolygonCount(countPolygons(model));
+      // 削減後のジオメトリに合わせてワイヤーフレームを再構築する
+      rebuildWireframeOverlay();
+      if (composerRef.current) composerRef.current.render();
+    }, 120);
+
+    return () => {
+      if (reduceTimeoutRef.current) clearTimeout(reduceTimeoutRef.current);
+    };
+  }, [polygonReductionRatio, setPolygonCount, rebuildWireframeOverlay]);
+
+  // ワイヤーフレーム表示の切り替え
+  useEffect(() => {
+    wireframeEnabledRef.current = wireframeOverlayEnabled;
+    rebuildWireframeOverlay();
+  }, [wireframeOverlayEnabled, rebuildWireframeOverlay]);
 
   // アニメーション制御（複数同時再生対応）
   useEffect(() => {

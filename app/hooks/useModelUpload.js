@@ -6,6 +6,8 @@ import { filePathState } from "../state/atoms/Upload3DModelAtom";
 import {
   animationsState,
   polygonCountState,
+  originalPolygonCountState,
+  polygonReductionRatioState,
   materialsState,
   texturesState,
   copyrightState,
@@ -26,6 +28,8 @@ export function useModelUpload() {
   const setUpload3DModelSelector = useSetRecoilState(upload3DModelSelector);
   const setAnimations = useSetRecoilState(animationsState);
   const setPolygonCount = useSetRecoilState(polygonCountState);
+  const setOriginalPolygonCount = useSetRecoilState(originalPolygonCountState);
+  const setPolygonReductionRatio = useSetRecoilState(polygonReductionRatioState);
   const setCurrentSelectAnimation = useSetRecoilState(
     currentSelectAnimationState,
   );
@@ -55,7 +59,10 @@ export function useModelUpload() {
           if (animations.length > 0) {
             setCurrentSelectAnimation(animations[0].name);
           }
-          setPolygonCount(gltfModel.getPolygonCount());
+          const polygonCount = gltfModel.getPolygonCount();
+          setPolygonCount(polygonCount);
+          setOriginalPolygonCount(polygonCount);
+          setPolygonReductionRatio(1);
 
           const copyright = gltfModel.getCopyright();
           setCopyright(copyright);
@@ -87,6 +94,8 @@ export function useModelUpload() {
       setLogs,
       setMaterials,
       setPolygonCount,
+      setOriginalPolygonCount,
+      setPolygonReductionRatio,
       setTextures,
       setUpload3DModelSelector,
     ],

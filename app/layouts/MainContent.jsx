@@ -10,6 +10,7 @@ import Viewer from "../components/Viewer";
 import ThreeViewer from "../components/ThreeViewer";
 import Logbox from "../components/Logbox";
 import TextureResizeModal from "../components/TextureResizeModal";
+import PolygonReduceModal from "../components/PolygonReduceModal";
 
 // hooks
 import { useModelUpload } from "../hooks/useModelUpload";
@@ -60,6 +61,7 @@ const MainContent = () => {
           <TextureResizeModal
             setCurrentResizeTexture={setCurrentResizeTexture}
           />
+          <PolygonReduceModal />
         </Fragment>
       ) : (
         <div
