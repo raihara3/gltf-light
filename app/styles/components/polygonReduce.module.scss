@@ -1,0 +1,40 @@
+@import "../variables";
+
+.modalContainer {
+  position: absolute;
+  top: 35%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 60%;
+  padding: 10px;
+  background: $bg-color;
+  border: solid 1px $light-blue;
+}
+
+.modalContainerHeader {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.slider {
+  width: 100%;
+  margin: 10px 0;
+}
+
+.sliderValue {
+  color: $light-blue;
+  font-weight: bold;
+}
+
+.result {
+  margin-top: 15px;
+}
+
+.warning {
+  color: $yellow;
+  font-weight: normal;
+  font-size: 12px;
+  line-height: 1rem;
+  margin-bottom: 15px;
+}

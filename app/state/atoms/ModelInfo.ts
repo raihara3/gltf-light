@@ -15,6 +15,29 @@ export const polygonCountState = atom<number>({
   default: 0,
 });
 
+// Polygon count of the model as uploaded, kept as the baseline for reduction.
+export const originalPolygonCountState = atom<number>({
+  key: "originalPolygonCount",
+  default: 0,
+});
+
+// Fraction of polygons to preserve (1 = no reduction).
+export const polygonReductionRatioState = atom<number>({
+  key: "polygonReductionRatio",
+  default: 1,
+});
+
+// Simplification can break rigged meshes, so surface a warning when present.
+export const hasSkinnedMeshState = atom<boolean>({
+  key: "hasSkinnedMesh",
+  default: false,
+});
+
+export const polygonReduceModalOpenState = atom<boolean>({
+  key: "polygonReduceModalOpen",
+  default: false,
+});
+
 export const copyrightState = atom<string>({
   key: "copyright",
   default: "",

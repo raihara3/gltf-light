@@ -1,12 +1,13 @@
 // lib
 import { Fragment, memo, useCallback, useRef, useState } from 'react';
-import { useRecoilValue, useRecoilState } from 'recoil';
+import { useRecoilValue, useRecoilState, useSetRecoilState } from 'recoil';
 
 // states
 import {
   polygonCountState,
   copyrightState,
   copyrightLockedState,
+  polygonReduceModalOpenState,
 } from "../../state/atoms/ModelInfo";
 import { upload3DModelSelector } from "../../state/selectors/Upload3DModelSelector";
 
@@ -22,6 +23,7 @@ const Statistics = () => {
   const polygonCount = useRecoilValue(polygonCountState);
   const [copyright, setCopyright] = useRecoilState(copyrightState);
   const copyrightLocked = useRecoilValue(copyrightLockedState);
+  const setPolygonReduceModalOpen = useSetRecoilState(polygonReduceModalOpenState);
   const [isEditing, setIsEditing] = useState(false);
   const inputRef = useRef(null);
 
@@ -39,6 +41,10 @@ const Statistics = () => {
   const onBlurInput = useCallback(() => {
     setIsEditing(false);
   }, []);
+
+  const onClickReduce = useCallback(() => {
+    setPolygonReduceModalOpen(true);
+  }, [setPolygonReduceModalOpen]);
 
   const renderCopyright = () => {
     if (copyrightLocked) {
@@ -85,7 +91,20 @@ const Statistics = () => {
           />
           <TwoColumn
             left="Polygon:"
-            right={polygonCount.toLocaleString()}
+            right={
+              <div className={styles.polygonField}>
+                <span className="text-overflow">
+                  {polygonCount.toLocaleString()}
+                </span>
+                <button
+                  type="button"
+                  className={styles.reduceButton}
+                  onClick={onClickReduce}
+                >
+                  Reduce
+                </button>
+              </div>
+            }
             className="note"
           />
           <TwoColumn

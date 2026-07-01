@@ -24,7 +24,12 @@ class Polygon {
     model.scene.traverse((child: any) => {
       if (child.isMesh) {
         const geometry = child.geometry;
-        polygonCount += geometry.index.count / 3;
+        // Simplified geometry may be non-indexed, so fall back to positions.
+        if (geometry.index) {
+          polygonCount += geometry.index.count / 3;
+        } else if (geometry.attributes.position) {
+          polygonCount += geometry.attributes.position.count / 3;
+        }
       }
     });
     this.polygonCount = polygonCount;
