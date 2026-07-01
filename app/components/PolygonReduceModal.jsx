@@ -9,6 +9,7 @@ import {
   polygonReductionRatioState,
   hasSkinnedMeshState,
   polygonReduceModalOpenState,
+  wireframeOverlayEnabledState,
 } from "../state/atoms/ModelInfo";
 
 // styles
@@ -24,6 +25,9 @@ const PolygonReduceModal = () => {
   const polygonCount = useRecoilValue(polygonCountState);
   const originalPolygonCount = useRecoilValue(originalPolygonCountState);
   const hasSkinnedMesh = useRecoilValue(hasSkinnedMeshState);
+  const [wireframeEnabled, setWireframeEnabled] = useRecoilState(
+    wireframeOverlayEnabledState
+  );
 
   const reductionPercent = Math.round((1 - reductionRatio) * 100);
 
@@ -39,9 +43,18 @@ const PolygonReduceModal = () => {
     setReductionRatio(1);
   }, [setReductionRatio]);
 
+  const onToggleWireframe = useCallback(
+    (event) => {
+      setWireframeEnabled(event.target.checked);
+    },
+    [setWireframeEnabled]
+  );
+
   const onClose = useCallback(() => {
+    // The wireframe overlay is only meaningful while reducing, so hide it on close.
+    setWireframeEnabled(false);
     setIsOpen(false);
-  }, [setIsOpen]);
+  }, [setWireframeEnabled, setIsOpen]);
 
   if (!isOpen) return null;
 
@@ -72,6 +85,14 @@ const PolygonReduceModal = () => {
           />
           <div className={styles.sliderValue}>{reductionPercent}%</div>
         </div>
+        <label className={styles.wireframeToggle}>
+          <input
+            type="checkbox"
+            checked={wireframeEnabled}
+            onChange={onToggleWireframe}
+          />
+          Show wireframe
+        </label>
         <div className={styles.result}>
           <div>Original: {originalPolygonCount.toLocaleString()}</div>
           <div>Current: {polygonCount.toLocaleString()}</div>

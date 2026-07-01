@@ -34,6 +34,7 @@ import {
   polygonCountState,
   polygonReductionRatioState,
   hasSkinnedMeshState,
+  wireframeOverlayEnabledState,
 } from "../state/atoms/ModelInfo";
 import {
   detailModeEnabledState,
@@ -91,6 +92,7 @@ const ThreeViewer = ({ currentResizeTexture = {} }) => {
   const materialProperties = useRecoilValue(materialPropertiesState);
   const copyright = useRecoilValue(copyrightState);
   const polygonReductionRatio = useRecoilValue(polygonReductionRatioState);
+  const wireframeOverlayEnabled = useRecoilValue(wireframeOverlayEnabledState);
   const setPolygonCount = useSetRecoilState(polygonCountState);
   const setHasSkinnedMesh = useSetRecoilState(hasSkinnedMeshState);
   const [detailModeEnabled, setDetailModeEnabled] = useRecoilState(detailModeEnabledState);
@@ -112,6 +114,8 @@ const ThreeViewer = ({ currentResizeTexture = {} }) => {
   const originalGeometriesRef = useRef(new Map());
   const reducePolygonRef = useRef(new ReducePolygon());
   const reduceTimeoutRef = useRef(null);
+  const wireframeGroupRef = useRef(null);
+  const wireframeEnabledRef = useRef(false);
   const isPlayingRef = useRef(true);
   const animationDurationRef = useRef(0);
   const throttledSetTimeRef = useRef(null);
@@ -147,6 +151,45 @@ const ThreeViewer = ({ currentResizeTexture = {} }) => {
       setAnimationCurrentTime(time);
     }, 100);
   }, [setAnimationCurrentTime]);
+
+  // モデルの各ポリゴンにワイヤーフレームを重ねて可視化する（Blenderの編集モード風）。
+  // エクスポート対象のモデルを汚さないよう、オーバーレイはシーン直下の別グループに置く。
+  const rebuildWireframeOverlay = useCallback(() => {
+    const scene = sceneRef.current;
+
+    if (wireframeGroupRef.current) {
+      wireframeGroupRef.current.traverse((child) => {
+        if (child.geometry) child.geometry.dispose();
+        if (child.material) child.material.dispose();
+      });
+      scene?.remove(wireframeGroupRef.current);
+      wireframeGroupRef.current = null;
+    }
+
+    const model = modelRef.current;
+    if (wireframeEnabledRef.current && scene && model) {
+      const group = new THREE.Group();
+      group.name = "wireframeOverlay";
+      model.updateWorldMatrix(true, true);
+      model.traverse((child) => {
+        if (!child.isMesh || !child.geometry) return;
+        const line = new THREE.LineSegments(
+          new THREE.WireframeGeometry(child.geometry),
+          new THREE.LineBasicMaterial({
+            color: 0x00e5ff,
+            transparent: true,
+            opacity: 0.5,
+          })
+        );
+        line.applyMatrix4(child.matrixWorld);
+        group.add(line);
+      });
+      scene.add(group);
+      wireframeGroupRef.current = group;
+    }
+
+    if (composerRef.current) composerRef.current.render();
+  }, []);
 
   // Three.js初期化
   useEffect(() => {
@@ -511,13 +554,21 @@ const ThreeViewer = ({ currentResizeTexture = {} }) => {
         }
 
         setMeshTree(buildMeshTree(model));
+        // 旧モデルのワイヤーフレームを片付け、必要なら新モデル用に作り直す
+        rebuildWireframeOverlay();
       },
       undefined,
       (error) => {
         console.error("An error occurred loading the model:", error);
       }
     );
-  }, [filePath, setMeshTree, setSelectedMeshUuid, setHasSkinnedMesh]);
+  }, [
+    filePath,
+    setMeshTree,
+    setSelectedMeshUuid,
+    setHasSkinnedMesh,
+    rebuildWireframeOverlay,
+  ]);
 
   // ポリゴン削減（スライダー追従・重い処理なので少し遅延させて適用）
   useEffect(() => {
@@ -547,13 +598,21 @@ const ThreeViewer = ({ currentResizeTexture = {} }) => {
       });
 
       setPolygonCount(countPolygons(model));
+      // 削減後のジオメトリに合わせてワイヤーフレームを再構築する
+      rebuildWireframeOverlay();
       if (composerRef.current) composerRef.current.render();
     }, 120);
 
     return () => {
       if (reduceTimeoutRef.current) clearTimeout(reduceTimeoutRef.current);
     };
-  }, [polygonReductionRatio, setPolygonCount]);
+  }, [polygonReductionRatio, setPolygonCount, rebuildWireframeOverlay]);
+
+  // ワイヤーフレーム表示の切り替え
+  useEffect(() => {
+    wireframeEnabledRef.current = wireframeOverlayEnabled;
+    rebuildWireframeOverlay();
+  }, [wireframeOverlayEnabled, rebuildWireframeOverlay]);
 
   // アニメーション制御（複数同時再生対応）
   useEffect(() => {

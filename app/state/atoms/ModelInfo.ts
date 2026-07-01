@@ -38,6 +38,12 @@ export const polygonReduceModalOpenState = atom<boolean>({
   default: false,
 });
 
+// Overlay mesh edges to inspect polygon density, like Blender's edit mode.
+export const wireframeOverlayEnabledState = atom<boolean>({
+  key: "wireframeOverlayEnabled",
+  default: false,
+});
+
 export const copyrightState = atom<string>({
   key: "copyright",
   default: "",

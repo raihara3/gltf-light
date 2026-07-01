@@ -27,6 +27,15 @@
   font-weight: bold;
 }
 
+.wireframeToggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 15px;
+  cursor: pointer;
+  user-select: none;
+}
+
 .result {
   margin-top: 15px;
 }

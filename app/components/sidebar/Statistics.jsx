@@ -9,6 +9,7 @@ import {
   copyrightLockedState,
   polygonReduceModalOpenState,
 } from "../../state/atoms/ModelInfo";
+import { animationPlayingState } from "../../state/atoms/CurrentSelect";
 import { upload3DModelSelector } from "../../state/selectors/Upload3DModelSelector";
 
 // components
@@ -24,6 +25,7 @@ const Statistics = () => {
   const [copyright, setCopyright] = useRecoilState(copyrightState);
   const copyrightLocked = useRecoilValue(copyrightLockedState);
   const setPolygonReduceModalOpen = useSetRecoilState(polygonReduceModalOpenState);
+  const setAnimationPlaying = useSetRecoilState(animationPlayingState);
   const [isEditing, setIsEditing] = useState(false);
   const inputRef = useRef(null);
 
@@ -43,8 +45,10 @@ const Statistics = () => {
   }, []);
 
   const onClickReduce = useCallback(() => {
+    // Reduction rebuilds geometry, so pause playback to inspect a static mesh.
+    setAnimationPlaying(false);
     setPolygonReduceModalOpen(true);
-  }, [setPolygonReduceModalOpen]);
+  }, [setAnimationPlaying, setPolygonReduceModalOpen]);
 
   const renderCopyright = () => {
     if (copyrightLocked) {
