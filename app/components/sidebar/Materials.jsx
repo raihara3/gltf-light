@@ -1,6 +1,6 @@
 // lib
-import { memo, Fragment, useCallback, useMemo, useState } from 'react';
-import { useRecoilState, useRecoilValue } from 'recoil';
+import { memo, Fragment, useCallback, useMemo, useRef, useState } from 'react';
+import { useRecoilState, useRecoilValue, useSetRecoilState } from 'recoil';
 
 // states
 import {
@@ -8,7 +8,9 @@ import {
   selectedMaterialNameState,
   materialPropertiesState,
   texturesState,
-  updateMaterialProperty
+  updateMaterialProperty,
+  deleteMaterialCommandState,
+  deleteTextureSlotCommandState,
 } from "../../state/atoms/ModelInfo";
 
 // hooks
@@ -16,17 +18,45 @@ import { useSelectMaterialByName } from "../../hooks/useSelectMaterialByName";
 
 // components
 import MaterialIcon from "../icons/MaterialIcon";
+import TrashIcon from "../icons/TrashIcon";
 
 // utils
-import { MATERIAL_TEXTURE_SLOTS } from "../../utils/materialTextureSlots";
+import { MATERIAL_TEXTURE_SLOTS, getMaterialTextureUuids } from "../../utils/materialTextureSlots";
+
+const getAllUsedTextureUuids = (materials) => {
+  const uuids = new Set();
+  for (const material of materials) {
+    for (const uuid of getMaterialTextureUuids(material)) {
+      uuids.add(uuid);
+    }
+  }
+  return uuids;
+};
+
+const deleteButtonStyle = {
+  display: 'inline-flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  flexShrink: 0,
+  padding: '2px',
+  border: 'none',
+  background: 'transparent',
+  color: 'rgba(255,80,80,0.7)',
+  cursor: 'pointer',
+  borderRadius: '2px',
+  lineHeight: 1,
+};
 
 const Materials = () => {
   const [materials, setMaterials] = useRecoilState(materialsState);
-  const textures = useRecoilValue(texturesState);
-  const selectedMaterialName = useRecoilValue(selectedMaterialNameState);
+  const [textures, setTextures] = useRecoilState(texturesState);
+  const [selectedMaterialName, setSelectedMaterialName] = useRecoilState(selectedMaterialNameState);
   const [materialProperties, setMaterialProperties] = useRecoilState(materialPropertiesState);
+  const setDeleteMaterialCommand = useSetRecoilState(deleteMaterialCommandState);
+  const setDeleteTextureSlotCommand = useSetRecoilState(deleteTextureSlotCommandState);
   const selectMaterialByName = useSelectMaterialByName();
   const [expandOverrides, setExpandOverrides] = useState({});
+  const serialRef = useRef(0);
 
   const texturesByUuid = useMemo(() => {
     const lookup = new Map();
@@ -69,6 +99,51 @@ const Materials = () => {
       setMaterials((prev) => updateMaterialProperty(prev, selectedMaterialName, "metalness", value));
     }
   }, [setMaterialProperties, selectedMaterialName, setMaterials]);
+
+  const handleDeleteMaterial = useCallback((materialName) => {
+    if (!window.confirm(`Delete material "${materialName}"?\nMeshes using it will become blank. This cannot be undone.`)) return;
+
+    const target = materials.find((m) => m.name === materialName);
+    const deletedUuids = getMaterialTextureUuids(target);
+    const remaining = materials.filter((m) => m.name !== materialName);
+    const remainingUuids = getAllUsedTextureUuids(remaining);
+    const orphanUuids = new Set([...deletedUuids].filter((u) => !remainingUuids.has(u)));
+
+    if (selectedMaterialName === materialName) setSelectedMaterialName(null);
+    setMaterials(remaining);
+    setTextures((prev) => prev.filter((t) => !orphanUuids.has(t.uuid)));
+    setDeleteMaterialCommand({ materialName, id: ++serialRef.current });
+  }, [materials, selectedMaterialName, setSelectedMaterialName, setMaterials, setTextures, setDeleteMaterialCommand]);
+
+  const handleDeleteTextureSlot = useCallback((materialName, slotKey, slotLabel) => {
+    if (!window.confirm(`Delete the ${slotLabel} texture from material "${materialName}"?\nThis cannot be undone.`)) return;
+
+    const target = materials.find((m) => m.name === materialName);
+    const deletedUuid = target?.[slotKey]?.uuid;
+
+    // Check if this uuid is used elsewhere (other materials or other slots of the same material).
+    const usedElsewhere = materials.some((m) => {
+      if (m.name === materialName) {
+        return MATERIAL_TEXTURE_SLOTS.some(
+          (slot) => slot.key !== slotKey && m[slot.key]?.uuid === deletedUuid
+        );
+      }
+      return getMaterialTextureUuids(m).has(deletedUuid);
+    });
+
+    // Mutate the sidebar-side material object so the thumbnail disappears immediately.
+    setMaterials((prev) => {
+      const mat = prev.find((m) => m.name === materialName);
+      if (mat) mat[slotKey] = null;
+      return [...prev];
+    });
+
+    if (deletedUuid && !usedElsewhere) {
+      setTextures((prev) => prev.filter((t) => t.uuid !== deletedUuid));
+    }
+
+    setDeleteTextureSlotCommand({ materialName, slotKey, id: ++serialRef.current });
+  }, [materials, setMaterials, setTextures, setDeleteTextureSlotCommand]);
 
   return (
     <Fragment>
@@ -133,7 +208,15 @@ const Materials = () => {
               <span style={{ display: 'inline-flex', flexShrink: 0 }}>
                 <MaterialIcon size={14} />
               </span>
-              <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{material.name}</span>
+              <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', flex: 1 }}>{material.name}</span>
+              <button
+                type="button"
+                onClick={(e) => { e.stopPropagation(); handleDeleteMaterial(material.name); }}
+                title="Delete material"
+                style={deleteButtonStyle}
+              >
+                <TrashIcon size={12} />
+              </button>
             </div>
             {hasTextures && isExpanded && (
               <ul
@@ -150,6 +233,7 @@ const Materials = () => {
                   <li
                     key={entry.key}
                     style={{
+                      position: 'relative',
                       display: 'flex',
                       flexDirection: 'column',
                       alignItems: 'center',
@@ -169,6 +253,26 @@ const Materials = () => {
                         objectFit: 'cover',
                       }}
                     />
+                    <button
+                      type="button"
+                      onClick={() => handleDeleteTextureSlot(material.name, entry.key, entry.label)}
+                      title={`Delete ${entry.label} texture`}
+                      style={{
+                        position: 'absolute',
+                        top: '2px',
+                        right: '4px',
+                        padding: '1px',
+                        border: 'none',
+                        background: 'rgba(0,0,0,0.55)',
+                        color: 'rgba(255,80,80,0.85)',
+                        cursor: 'pointer',
+                        borderRadius: '2px',
+                        lineHeight: 1,
+                        display: 'flex',
+                      }}
+                    >
+                      <TrashIcon size={10} />
+                    </button>
                     <span
                       style={{
                         overflow: 'hidden',

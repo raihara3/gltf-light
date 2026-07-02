@@ -35,6 +35,8 @@ import {
   polygonReductionRatioState,
   hasSkinnedMeshState,
   wireframeOverlayEnabledState,
+  deleteMaterialCommandState,
+  deleteTextureSlotCommandState,
 } from "../state/atoms/ModelInfo";
 import {
   detailModeEnabledState,
@@ -93,6 +95,8 @@ const ThreeViewer = ({ currentResizeTexture = {} }) => {
   const copyright = useRecoilValue(copyrightState);
   const polygonReductionRatio = useRecoilValue(polygonReductionRatioState);
   const wireframeOverlayEnabled = useRecoilValue(wireframeOverlayEnabledState);
+  const deleteMaterialCommand = useRecoilValue(deleteMaterialCommandState);
+  const deleteTextureSlotCommand = useRecoilValue(deleteTextureSlotCommandState);
   const setPolygonCount = useSetRecoilState(polygonCountState);
   const setHasSkinnedMesh = useSetRecoilState(hasSkinnedMeshState);
   const [detailModeEnabled, setDetailModeEnabled] = useRecoilState(detailModeEnabledState);
@@ -116,6 +120,7 @@ const ThreeViewer = ({ currentResizeTexture = {} }) => {
   const reduceTimeoutRef = useRef(null);
   const wireframeGroupRef = useRef(null);
   const wireframeEnabledRef = useRef(false);
+  const blankMaterialRef = useRef(null);
   const isPlayingRef = useRef(true);
   const animationDurationRef = useRef(0);
   const throttledSetTimeRef = useRef(null);
@@ -444,6 +449,11 @@ const ThreeViewer = ({ currentResizeTexture = {} }) => {
               }
             }
           });
+
+          if (blankMaterialRef.current) {
+            blankMaterialRef.current.dispose();
+            blankMaterialRef.current = null;
+          }
         }
 
         // 新しいモデルの追加
@@ -613,6 +623,56 @@ const ThreeViewer = ({ currentResizeTexture = {} }) => {
     wireframeEnabledRef.current = wireframeOverlayEnabled;
     rebuildWireframeOverlay();
   }, [wireframeOverlayEnabled, rebuildWireframeOverlay]);
+
+  // マテリアル削除: 対象マテリアルを使っているメッシュを共有の無地マテリアルに差し替える。
+  useEffect(() => {
+    if (!deleteMaterialCommand || !modelRef.current) return;
+    const { materialName } = deleteMaterialCommand;
+
+    if (!blankMaterialRef.current) {
+      blankMaterialRef.current = new THREE.MeshStandardMaterial({
+        name: "__blank__",
+        color: 0x888888,
+        roughness: 1,
+        metalness: 0,
+      });
+    }
+
+    modelRef.current.traverse((child) => {
+      if (!child.isMesh) return;
+      if (Array.isArray(child.material)) {
+        child.material = child.material.map((m) =>
+          m.name === materialName ? blankMaterialRef.current : m
+        );
+      } else if (child.material.name === materialName) {
+        child.material = blankMaterialRef.current;
+      }
+    });
+
+    rebuildWireframeOverlay();
+    if (composerRef.current) composerRef.current.render();
+  }, [deleteMaterialCommand, rebuildWireframeOverlay]);
+
+  // テクスチャスロット削除: 対象スロットを null にして GPU リソースを解放する。
+  useEffect(() => {
+    if (!deleteTextureSlotCommand || !modelRef.current) return;
+    const { materialName, slotKey } = deleteTextureSlotCommand;
+
+    modelRef.current.traverse((child) => {
+      if (!child.isMesh) return;
+      const mats = Array.isArray(child.material) ? child.material : [child.material];
+      for (const m of mats) {
+        if (m.name !== materialName) continue;
+        if (m[slotKey]) {
+          m[slotKey].dispose();
+          m[slotKey] = null;
+          m.needsUpdate = true;
+        }
+      }
+    });
+
+    if (composerRef.current) composerRef.current.render();
+  }, [deleteTextureSlotCommand]);
 
   // アニメーション制御（複数同時再生対応）
   useEffect(() => {
