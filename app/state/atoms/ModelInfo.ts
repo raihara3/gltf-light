@@ -69,6 +69,9 @@ export const copyrightLockedState = atom<boolean>({
 export const materialsState = atom<Material[]>({
   key: "materials",
   default: [],
+  // Holds live THREE.Material instances that are mutated in place (properties,
+  // texture slots), so opt out of Recoil's dev-mode deep freeze.
+  dangerouslyAllowMutability: true,
 })
 
 export const texturesState = atom<TextureType[]>({
