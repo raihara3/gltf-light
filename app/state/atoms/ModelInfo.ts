@@ -44,6 +44,18 @@ export const wireframeOverlayEnabledState = atom<boolean>({
   default: false,
 });
 
+// Commands to delete a material or a single texture slot in the Three.js scene.
+// The id field ensures the useEffect fires even when the same target is deleted twice.
+export const deleteMaterialCommandState = atom<{ materialName: string; id: number } | null>({
+  key: "deleteMaterialCommand",
+  default: null,
+});
+
+export const deleteTextureSlotCommandState = atom<{ materialName: string; slotKey: string; id: number } | null>({
+  key: "deleteTextureSlotCommand",
+  default: null,
+});
+
 export const copyrightState = atom<string>({
   key: "copyright",
   default: "",
@@ -57,6 +69,9 @@ export const copyrightLockedState = atom<boolean>({
 export const materialsState = atom<Material[]>({
   key: "materials",
   default: [],
+  // Holds live THREE.Material instances that are mutated in place (properties,
+  // texture slots), so opt out of Recoil's dev-mode deep freeze.
+  dangerouslyAllowMutability: true,
 })
 
 export const texturesState = atom<TextureType[]>({

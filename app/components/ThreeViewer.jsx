@@ -35,6 +35,8 @@ import {
   polygonReductionRatioState,
   hasSkinnedMeshState,
   wireframeOverlayEnabledState,
+  deleteMaterialCommandState,
+  deleteTextureSlotCommandState,
 } from "../state/atoms/ModelInfo";
 import {
   detailModeEnabledState,
@@ -93,6 +95,8 @@ const ThreeViewer = ({ currentResizeTexture = {} }) => {
   const copyright = useRecoilValue(copyrightState);
   const polygonReductionRatio = useRecoilValue(polygonReductionRatioState);
   const wireframeOverlayEnabled = useRecoilValue(wireframeOverlayEnabledState);
+  const deleteMaterialCommand = useRecoilValue(deleteMaterialCommandState);
+  const deleteTextureSlotCommand = useRecoilValue(deleteTextureSlotCommandState);
   const setPolygonCount = useSetRecoilState(polygonCountState);
   const setHasSkinnedMesh = useSetRecoilState(hasSkinnedMeshState);
   const [detailModeEnabled, setDetailModeEnabled] = useRecoilState(detailModeEnabledState);
@@ -116,6 +120,7 @@ const ThreeViewer = ({ currentResizeTexture = {} }) => {
   const reduceTimeoutRef = useRef(null);
   const wireframeGroupRef = useRef(null);
   const wireframeEnabledRef = useRef(false);
+  const blankMaterialRef = useRef(null);
   const isPlayingRef = useRef(true);
   const animationDurationRef = useRef(0);
   const throttledSetTimeRef = useRef(null);
@@ -444,6 +449,11 @@ const ThreeViewer = ({ currentResizeTexture = {} }) => {
               }
             }
           });
+
+          if (blankMaterialRef.current) {
+            blankMaterialRef.current.dispose();
+            blankMaterialRef.current = null;
+          }
         }
 
         // 新しいモデルの追加
@@ -614,6 +624,56 @@ const ThreeViewer = ({ currentResizeTexture = {} }) => {
     rebuildWireframeOverlay();
   }, [wireframeOverlayEnabled, rebuildWireframeOverlay]);
 
+  // マテリアル削除: 対象マテリアルを使っているメッシュを共有の無地マテリアルに差し替える。
+  useEffect(() => {
+    if (!deleteMaterialCommand || !modelRef.current) return;
+    const { materialName } = deleteMaterialCommand;
+
+    if (!blankMaterialRef.current) {
+      blankMaterialRef.current = new THREE.MeshStandardMaterial({
+        name: "__blank__",
+        color: 0x888888,
+        roughness: 1,
+        metalness: 0,
+      });
+    }
+
+    modelRef.current.traverse((child) => {
+      if (!child.isMesh) return;
+      if (Array.isArray(child.material)) {
+        child.material = child.material.map((m) =>
+          m.name === materialName ? blankMaterialRef.current : m
+        );
+      } else if (child.material.name === materialName) {
+        child.material = blankMaterialRef.current;
+      }
+    });
+
+    rebuildWireframeOverlay();
+    if (composerRef.current) composerRef.current.render();
+  }, [deleteMaterialCommand, rebuildWireframeOverlay]);
+
+  // テクスチャスロット削除: 対象スロットを null にして GPU リソースを解放する。
+  useEffect(() => {
+    if (!deleteTextureSlotCommand || !modelRef.current) return;
+    const { materialName, slotKey } = deleteTextureSlotCommand;
+
+    modelRef.current.traverse((child) => {
+      if (!child.isMesh) return;
+      const mats = Array.isArray(child.material) ? child.material : [child.material];
+      for (const m of mats) {
+        if (m.name !== materialName) continue;
+        if (m[slotKey]) {
+          m[slotKey].dispose();
+          m[slotKey] = null;
+          m.needsUpdate = true;
+        }
+      }
+    });
+
+    if (composerRef.current) composerRef.current.render();
+  }, [deleteTextureSlotCommand]);
+
   // アニメーション制御（複数同時再生対応）
   useEffect(() => {
     if (!currentSelectAnimation || !animationActionsRef.current) return;
@@ -655,49 +715,57 @@ const ThreeViewer = ({ currentResizeTexture = {} }) => {
     }
   }, [seekTime, setSeekTime, setAnimationCurrentTime]);
 
-  // テクスチャの動的変更
-    useEffect(() => {
-    if (
-      !currentResizeTexture ||
-      !currentResizeTexture.src ||
-      !currentResizeTexture.materialName
-    )
-      return;
+  // テクスチャの動的変更（リサイズ結果を該当スロットへ反映）
+  useEffect(() => {
+    if (!currentResizeTexture || !currentResizeTexture.src) return;
+
+    // usages: [{ materialName, slotKey }] — 同一テクスチャが複数スロット /
+    // マテリアルで共有される場合に対応する。後方互換として usages が無ければ
+    // base color(map) を対象にする。
+    const usages =
+      Array.isArray(currentResizeTexture.usages) && currentResizeTexture.usages.length > 0
+        ? currentResizeTexture.usages
+        : currentResizeTexture.materialName
+          ? [{ materialName: currentResizeTexture.materialName, slotKey: "map" }]
+          : [];
+    if (usages.length === 0) return;
 
     const textureLoader = new THREE.TextureLoader();
-    textureLoader.load(currentResizeTexture.src, (texture) => {
-      texture.colorSpace = THREE.SRGBColorSpace;
+    textureLoader.load(currentResizeTexture.src, (loaded) => {
+      loaded.minFilter = THREE.LinearMipmapLinearFilter;
+      loaded.magFilter = THREE.LinearFilter;
 
-      // テクスチャのUV設定を適切に設定
-      texture.wrapS = THREE.RepeatWrapping;
-      texture.wrapT = THREE.RepeatWrapping;
-      texture.repeat.set(1, 1);
-      texture.offset.set(0, 0);
+      usages.forEach(({ materialName, slotKey }) => {
+        materialsRef.current.forEach((material) => {
+          if (material.name !== materialName) return;
 
-      // フィルタリング設定
-      texture.minFilter = THREE.LinearMipmapLinearFilter;
-      texture.magFilter = THREE.LinearFilter;
-
-      // テクスチャが反転しないように設定
-      texture.flipY = false;
-
-      materialsRef.current.forEach((material) => {
-        if (material.name === currentResizeTexture.materialName) {
-          // 元のテクスチャの設定を保持
-          const originalTexture = material.map;
-          if (originalTexture) {
-            // 元のテクスチャのUV設定をコピー
-            texture.wrapS = originalTexture.wrapS;
-            texture.wrapT = originalTexture.wrapT;
-            texture.repeat.copy(originalTexture.repeat);
-            texture.offset.copy(originalTexture.offset);
-            texture.flipY = originalTexture.flipY;
+          // スロットごとに個別のテクスチャを割り当てる（色空間などがスロットで
+          // 異なり得るため）。元スロットの設定を引き継いで見た目を保つ。
+          const original = material[slotKey];
+          const texture = loaded.clone();
+          if (original) {
+            texture.wrapS = original.wrapS;
+            texture.wrapT = original.wrapT;
+            texture.repeat.copy(original.repeat);
+            texture.offset.copy(original.offset);
+            texture.flipY = original.flipY;
+            texture.colorSpace = original.colorSpace;
+            texture.channel = original.channel;
+          } else {
+            texture.flipY = false;
+            texture.colorSpace =
+              slotKey === "map" || slotKey === "emissiveMap"
+                ? THREE.SRGBColorSpace
+                : THREE.NoColorSpace;
           }
+          texture.needsUpdate = true;
 
-          material.map = texture;
+          material[slotKey] = texture;
           material.needsUpdate = true;
-        }
+        });
       });
+
+      if (composerRef.current) composerRef.current.render();
     });
   }, [currentResizeTexture]);
 
