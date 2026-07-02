@@ -3,7 +3,7 @@ import { memo, useEffect, useState, useCallback, useRef } from "react";
 import { useRecoilValue, useRecoilState } from "recoil";
 
 // states
-import { texturesState } from "../state/atoms/ModelInfo";
+import { texturesState, materialsState } from "../state/atoms/ModelInfo";
 import { currentSelectTextureState } from "../state/atoms/CurrentSelect";
 
 // classes
@@ -11,6 +11,9 @@ import ResizeTexture from "../classes/ResizeTexture";
 
 // components
 import TwoColumn from "../layouts/TwoColumn";
+
+// utils
+import { MATERIAL_TEXTURE_SLOTS } from "../utils/materialTextureSlots";
 
 // styles
 import styles from "../styles/components/textureResize.module.scss";
@@ -20,6 +23,7 @@ const TextureResizeModal = ({ setCurrentResizeTexture }) => {
     currentSelectTextureState
   );
   const [textures, setTextures] = useRecoilState(texturesState);
+  const materials = useRecoilValue(materialsState);
   const [resizeTexture, setResizeTexture] = useState(null);
   const [isShow, setIsShow] = useState(false);
 
@@ -38,9 +42,21 @@ const TextureResizeModal = ({ setCurrentResizeTexture }) => {
         width: size,
       });
       setResizeTexture(texture);
-      setCurrentResizeTexture(texture);
+
+      // このテクスチャが使われている全スロットを収集する。
+      // 同一テクスチャが複数マテリアル / 複数スロット（base color 以外も）で
+      // 共有されている場合に、正しいスロットへプレビュー反映するため。
+      const usages = [];
+      for (const material of materials) {
+        for (const slot of MATERIAL_TEXTURE_SLOTS) {
+          if (material[slot.key]?.uuid === currentTexture.uuid) {
+            usages.push({ materialName: material.name, slotKey: slot.key });
+          }
+        }
+      }
+      setCurrentResizeTexture({ ...texture, usages });
     },
-    [currentTexture]
+    [currentTexture, materials, setCurrentResizeTexture]
   );
 
   const onConfirm = useCallback(() => {
@@ -87,7 +103,7 @@ const TextureResizeModal = ({ setCurrentResizeTexture }) => {
         right={
           <div className={`note`}>
             <div className={styles.warning}>
-              Currently only textures used for base color are supported
+              Resizing updates every material slot that uses this texture.
             </div>
             <div style={{ marginBottom: "15px" }}>
               <h4 className={`sub-title`}>Current info</h4>

@@ -715,49 +715,57 @@ const ThreeViewer = ({ currentResizeTexture = {} }) => {
     }
   }, [seekTime, setSeekTime, setAnimationCurrentTime]);
 
-  // テクスチャの動的変更
-    useEffect(() => {
-    if (
-      !currentResizeTexture ||
-      !currentResizeTexture.src ||
-      !currentResizeTexture.materialName
-    )
-      return;
+  // テクスチャの動的変更（リサイズ結果を該当スロットへ反映）
+  useEffect(() => {
+    if (!currentResizeTexture || !currentResizeTexture.src) return;
+
+    // usages: [{ materialName, slotKey }] — 同一テクスチャが複数スロット /
+    // マテリアルで共有される場合に対応する。後方互換として usages が無ければ
+    // base color(map) を対象にする。
+    const usages =
+      Array.isArray(currentResizeTexture.usages) && currentResizeTexture.usages.length > 0
+        ? currentResizeTexture.usages
+        : currentResizeTexture.materialName
+          ? [{ materialName: currentResizeTexture.materialName, slotKey: "map" }]
+          : [];
+    if (usages.length === 0) return;
 
     const textureLoader = new THREE.TextureLoader();
-    textureLoader.load(currentResizeTexture.src, (texture) => {
-      texture.colorSpace = THREE.SRGBColorSpace;
+    textureLoader.load(currentResizeTexture.src, (loaded) => {
+      loaded.minFilter = THREE.LinearMipmapLinearFilter;
+      loaded.magFilter = THREE.LinearFilter;
 
-      // テクスチャのUV設定を適切に設定
-      texture.wrapS = THREE.RepeatWrapping;
-      texture.wrapT = THREE.RepeatWrapping;
-      texture.repeat.set(1, 1);
-      texture.offset.set(0, 0);
+      usages.forEach(({ materialName, slotKey }) => {
+        materialsRef.current.forEach((material) => {
+          if (material.name !== materialName) return;
 
-      // フィルタリング設定
-      texture.minFilter = THREE.LinearMipmapLinearFilter;
-      texture.magFilter = THREE.LinearFilter;
-
-      // テクスチャが反転しないように設定
-      texture.flipY = false;
-
-      materialsRef.current.forEach((material) => {
-        if (material.name === currentResizeTexture.materialName) {
-          // 元のテクスチャの設定を保持
-          const originalTexture = material.map;
-          if (originalTexture) {
-            // 元のテクスチャのUV設定をコピー
-            texture.wrapS = originalTexture.wrapS;
-            texture.wrapT = originalTexture.wrapT;
-            texture.repeat.copy(originalTexture.repeat);
-            texture.offset.copy(originalTexture.offset);
-            texture.flipY = originalTexture.flipY;
+          // スロットごとに個別のテクスチャを割り当てる（色空間などがスロットで
+          // 異なり得るため）。元スロットの設定を引き継いで見た目を保つ。
+          const original = material[slotKey];
+          const texture = loaded.clone();
+          if (original) {
+            texture.wrapS = original.wrapS;
+            texture.wrapT = original.wrapT;
+            texture.repeat.copy(original.repeat);
+            texture.offset.copy(original.offset);
+            texture.flipY = original.flipY;
+            texture.colorSpace = original.colorSpace;
+            texture.channel = original.channel;
+          } else {
+            texture.flipY = false;
+            texture.colorSpace =
+              slotKey === "map" || slotKey === "emissiveMap"
+                ? THREE.SRGBColorSpace
+                : THREE.NoColorSpace;
           }
+          texture.needsUpdate = true;
 
-          material.map = texture;
+          material[slotKey] = texture;
           material.needsUpdate = true;
-        }
+        });
       });
+
+      if (composerRef.current) composerRef.current.render();
     });
   }, [currentResizeTexture]);
 
