@@ -1,0 +1,70 @@
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-12);
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.material {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+  padding-bottom: var(--space-12);
+  border-bottom: 1px solid var(--color-border);
+
+  &:last-child {
+    padding-bottom: 0;
+    border-bottom: none;
+  }
+}
+
+.name {
+  font-weight: 600;
+  font-size: var(--font-size-14);
+  line-height: 18px;
+  color: var(--color-text);
+}
+
+.maps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+}
+
+.mapChip {
+  padding: 2px var(--space-8);
+  border-radius: var(--radius-sm);
+  background: var(--color-bg);
+  font-size: var(--font-size-11);
+  line-height: 14px;
+  color: var(--color-text-muted);
+}
+
+.slider {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+
+  input {
+    width: 100%;
+    margin: 0;
+    accent-color: var(--color-highlight);
+    cursor: pointer;
+  }
+}
+
+.sliderHead {
+  display: flex;
+  justify-content: space-between;
+  font-size: var(--font-size-11);
+  line-height: 14px;
+  color: var(--color-text-muted);
+}
+
+.value {
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text);
+}

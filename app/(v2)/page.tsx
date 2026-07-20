@@ -4,16 +4,13 @@ import { useModelStore } from "./store/modelStore";
 import { Header } from "./components/Header";
 import { ServiceInfo } from "./components/ServiceInfo";
 import { FileDropzone } from "./components/FileDropzone";
-import { ModelSummaryCard } from "./components/ModelSummaryCard";
 import { Copyright } from "./components/Copyright";
-import { Stage } from "./viewer/Stage";
+import { ModelWorkspace } from "./features/preview/ModelWorkspace";
 import styles from "./styles/page.module.scss";
 
 /**
- * v2 landing (`/`). The shell (header, mode switch, theme) plus the model
- * upload flow. Uploading a `.glb` fills modelStore and switches the sidebar
- * to the model overview (Figma preview screen). The 3D viewer, context tabs
- * and optimization UI that consume that state arrive in later issues.
+ * v2 landing (`/`). Empty state = service info + hero uploader; once a `.glb`
+ * is loaded, the ModelWorkspace takes over (preview sidebar + 3D viewer).
  */
 export default function V2Page() {
   const hasModel = useModelStore((state) => state.originalBytes !== null);
@@ -22,26 +19,21 @@ export default function V2Page() {
     <>
       <Header />
       <main className={styles.main}>
-        <aside className={styles.sidebar}>
-          {hasModel ? (
-            <>
-              <FileDropzone />
-              <ModelSummaryCard />
-            </>
-          ) : (
-            <ServiceInfo />
-          )}
-        </aside>
-        <section className={styles.viewer} aria-label="3Dビュー">
-          {hasModel ? (
-            <Stage />
-          ) : (
-            <div className={styles.viewerBody}>
-              <FileDropzone variant="hero" />
-            </div>
-          )}
-          <Copyright />
-        </section>
+        {hasModel ? (
+          <ModelWorkspace />
+        ) : (
+          <>
+            <aside className={styles.sidebar}>
+              <ServiceInfo />
+            </aside>
+            <section className={styles.viewer} aria-label="3Dビュー">
+              <div className={styles.viewerBody}>
+                <FileDropzone variant="hero" />
+              </div>
+              <Copyright />
+            </section>
+          </>
+        )}
       </main>
     </>
   );

@@ -1,0 +1,80 @@
+.tree {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.group {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  border-radius: var(--radius-sm);
+
+  &:hover {
+    background: var(--color-bg);
+  }
+}
+
+.rowSelected {
+  background: var(--color-bg);
+}
+
+.toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--color-text-faint);
+  font-size: 10px;
+  cursor: pointer;
+}
+
+.toggleSpacer {
+  flex-shrink: 0;
+  width: 16px;
+}
+
+.label {
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+  flex: 1;
+  min-width: 0;
+  padding: var(--space-4) 0;
+  border: none;
+  background: transparent;
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.name {
+  overflow: hidden;
+  font-size: var(--font-size-14);
+  line-height: 18px;
+  color: var(--color-text);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.badge {
+  flex-shrink: 0;
+  padding: 0 var(--space-4);
+  border-radius: var(--radius-sm);
+  background: var(--color-track);
+  font-size: var(--font-size-9);
+  line-height: 14px;
+  color: var(--color-text-faint);
+}

@@ -40,6 +40,9 @@ export const CameraIcon = (props: IconProps) => (
 export const CheckIcon = (props: IconProps) => (
   <Icon {...props}><path d="M20 6 9 17l-5-5" /></Icon>
 );
+export const CircleIcon = (props: IconProps) => (
+  <Icon {...props}><circle cx="12" cy="12" r="9" /></Icon>
+);
 export const CubeIcon = (props: IconProps) => (
   <Icon {...props}><path d="M21 8l-9-5-9 5v8l9 5 9-5z" /><path d="M3 8l9 5 9-5" /><path d="M12 13v8" /></Icon>
 );
