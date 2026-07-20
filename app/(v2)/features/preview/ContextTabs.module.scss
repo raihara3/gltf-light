@@ -39,6 +39,10 @@
   &:hover:not(.tabActive):not(:disabled) {
     color: var(--color-text);
   }
+
+  svg {
+    flex-shrink: 0;
+  }
 }
 
 .tabActive {

@@ -8,6 +8,7 @@
   --color-accent-strong: #ed4f14; // hover / pressed
   --color-on-accent: #ffffff; // text/icon on an accent fill
   --color-highlight: #2f6bff; // Figma color/blue-8 — upload icon, notes, focus
+  --color-highlight-soft: #eaf0ff; // Figma color/blue-2 — selected row background
 
   // Surface & text ramp (light)
   --color-bg: #f7f5f2; // Figma color/biege-3
@@ -63,6 +64,7 @@
   --color-text: #f4ede2;
   --color-text-muted: #b3a99c;
   --color-text-faint: #8f887c;
+  --color-highlight-soft: #23324d;
 
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4), 0 2px 8px rgba(0, 0, 0, 0.5);
 }

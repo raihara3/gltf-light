@@ -130,6 +130,7 @@ export function useThreeStage(bytes: ArrayBuffer | null) {
   const clockRef = useRef(new THREE.Clock());
   const raycasterRef = useRef(new THREE.Raycaster());
   const pointerDownRef = useRef<{ x: number; y: number } | null>(null);
+  const isPlayingRef = useRef(false);
   const setMeta = useModelStore((state) => state.setMeta);
 
   const [animations, setAnimations] = useState<StageAnimation[]>([]);
@@ -140,6 +141,11 @@ export function useThreeStage(bytes: ArrayBuffer | null) {
   const [materials, setMaterials] = useState<MaterialInfo[]>([]);
   const [meshTree, setMeshTree] = useState<MeshNode | null>(null);
   const [selectedUuid, setSelectedUuid] = useState<string | null>(null);
+
+  // Keep a ref in sync so the render loop can gate the mixer without re-running.
+  useEffect(() => {
+    isPlayingRef.current = isPlaying;
+  }, [isPlaying]);
 
   const applySelection = useCallback((uuid: string | null) => {
     const stage = refs.current;
@@ -227,7 +233,7 @@ export function useThreeStage(bytes: ArrayBuffer | null) {
         return;
       }
       const delta = clockRef.current.getDelta();
-      if (current.mixer) {
+      if (current.mixer && isPlayingRef.current) {
         current.mixer.update(delta);
         // Throttle time updates to ~10/s to avoid re-rendering every frame.
         const deci = Math.floor(current.mixer.time * 10);
@@ -402,15 +408,9 @@ export function useThreeStage(bytes: ArrayBuffer | null) {
     if (!stage || !stage.mixer) {
       return;
     }
-    setIsPlaying((playing) => {
-      const next = !playing;
-      stage.actions.forEach((action) => {
-        if (!action.paused || action.isRunning()) {
-          action.paused = !next;
-        }
-      });
-      return next;
-    });
+    // The render loop gates mixer.update on isPlaying, so flipping the flag both
+    // freezes the pose and stops the seek time from advancing.
+    setIsPlaying((playing) => !playing);
   }, []);
 
   const toggleClip = useCallback((name: string) => {

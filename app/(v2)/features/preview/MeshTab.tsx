@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import type { StageController, MeshNode } from "../../viewer/useThreeStage";
-import { LayersIcon } from "../../icons";
+import { LayersIcon, CubeIcon } from "../../icons";
 import { TabCard } from "./TabCard";
 import styles from "./MeshTab.module.scss";
 
@@ -32,6 +32,7 @@ function TreeNode({ node, depth, selectedUuid, onSelect }: TreeNodeProps) {
   const [open, setOpen] = useState(true);
   const hasChildren = node.children.length > 0;
   const isSelected = selectedUuid === node.uuid;
+  const NodeIcon = node.isMesh ? CubeIcon : LayersIcon;
 
   return (
     <li role="treeitem" aria-selected={isSelected} aria-expanded={hasChildren ? open : undefined}>
@@ -56,8 +57,8 @@ function TreeNode({ node, depth, selectedUuid, onSelect }: TreeNodeProps) {
           className={styles.label}
           onClick={() => onSelect(isSelected ? null : node.uuid)}
         >
+          <NodeIcon size={12} />
           <span className={styles.name}>{node.name}</span>
-          {node.isMesh && <span className={styles.badge}>mesh</span>}
         </button>
       </div>
       {hasChildren && open && (

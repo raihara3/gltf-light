@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import type { StageController } from "../../viewer/useThreeStage";
-import { FilmIcon, CircleIcon, LayersIcon, type IconProps } from "../../icons";
+import { FilmIcon, SphereIcon, LayersIcon, type IconProps } from "../../icons";
 import { AnimationTab } from "./AnimationTab";
 import { MaterialTab } from "./MaterialTab";
 import { MeshTab } from "./MeshTab";
@@ -12,7 +12,7 @@ type TabKey = "animation" | "material" | "mesh";
 
 const TABS: { key: TabKey; label: string; Icon: (props: IconProps) => React.ReactElement }[] = [
   { key: "animation", label: "アニメーション", Icon: FilmIcon },
-  { key: "material", label: "マテリアル", Icon: CircleIcon },
+  { key: "material", label: "マテリアル", Icon: SphereIcon },
   { key: "mesh", label: "メッシュ", Icon: LayersIcon },
 ];
 
@@ -49,7 +49,7 @@ export function ContextTabs({ stage }: { stage: StageController }) {
               className={`${styles.tab} ${isActive ? styles.tabActive : ""}`}
               onClick={() => setActive(key)}
             >
-              <Icon size={14} />
+              <Icon size={16} />
               {label}
             </button>
           );

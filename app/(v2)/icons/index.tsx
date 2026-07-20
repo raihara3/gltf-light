@@ -43,6 +43,10 @@ export const CheckIcon = (props: IconProps) => (
 export const CircleIcon = (props: IconProps) => (
   <Icon {...props}><circle cx="12" cy="12" r="9" /></Icon>
 );
+// Material sphere: circle with a specular-highlight arc.
+export const SphereIcon = (props: IconProps) => (
+  <Icon {...props}><circle cx="12" cy="12" r="9" /><path d="M8.5 8a5 5 0 0 1 4-1.8" /></Icon>
+);
 export const CubeIcon = (props: IconProps) => (
   <Icon {...props}><path d="M21 8l-9-5-9 5v8l9 5 9-5z" /><path d="M3 8l9 5 9-5" /><path d="M12 13v8" /></Icon>
 );
