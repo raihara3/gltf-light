@@ -6,6 +6,7 @@
   // Brand / accent (role-stable across themes)
   --color-accent: #ff5b1d; // Figma color/orange — active tab, section icons, CTA
   --color-accent-strong: #ed4f14; // hover / pressed
+  --color-on-accent: #ffffff; // text/icon on an accent fill
   --color-highlight: #2f6bff; // Figma color/blue-8 — upload icon, notes, focus
 
   // Surface & text ramp (light)
@@ -17,7 +18,8 @@
   --color-text-muted: #66625a; // Figma color/black-6 — inactive tab label
   --color-text-faint: #928d84; // Figma color/black-5 — v2.0, copyright, subtitle
 
-  // Radius (Figma radius/r10, radius/r100)
+  // Radius (Figma radius/r4, radius/r10, radius/r100)
+  --radius-sm: 4px;
   --radius-md: 10px;
   --radius-pill: 100px;
 
