@@ -9,6 +9,8 @@ import { devtools } from "zustand/middleware";
 export interface ModelMeta {
   readonly name: string;
   readonly size: number; // byte length of the original glb
+  /** From the glb asset (kept for save-time preservation); undefined = none. */
+  readonly copyright?: string;
   readonly polygons?: number;
   readonly textures?: readonly ModelTextureMeta[];
 }
