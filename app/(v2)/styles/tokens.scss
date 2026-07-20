@@ -23,6 +23,9 @@
   --radius-md: 10px;
   --radius-pill: 100px;
 
+  // Elevation (floating controls over the 3D canvas)
+  --shadow-sm: 0 1px 2px rgba(38, 36, 31, 0.06), 0 2px 8px rgba(38, 36, 31, 0.08);
+
   // Spacing (Figma spacer scale + 8pt rhythm)
   --space-2: 2px;
   --space-4: 4px;
@@ -60,4 +63,6 @@
   --color-text: #f4ede2;
   --color-text-muted: #b3a99c;
   --color-text-faint: #8f887c;
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4), 0 2px 8px rgba(0, 0, 0, 0.5);
 }

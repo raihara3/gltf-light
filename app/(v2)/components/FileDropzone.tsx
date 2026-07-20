@@ -5,17 +5,24 @@ import { useModelUpload } from "../hooks/useModelUpload";
 import { UploadIcon } from "../icons";
 import styles from "./FileDropzone.module.scss";
 
+interface FileDropzoneProps {
+  /** `panel` = compact (sidebar); `hero` = fills the preview area (empty state). */
+  variant?: "panel" | "hero";
+}
+
 /** Upload dropzone: click or drag & drop a `.glb` into modelStore. */
-export function FileDropzone() {
+export function FileDropzone({ variant = "panel" }: FileDropzoneProps) {
   const { acceptFiles, error } = useModelUpload();
   const inputRef = useRef<HTMLInputElement>(null);
   const [isDragging, setIsDragging] = useState(false);
 
   return (
-    <div className={styles.wrapper}>
+    <div className={`${styles.wrapper} ${variant === "hero" ? styles.wrapperHero : ""}`}>
       <button
         type="button"
-        className={`${styles.dropzone} ${isDragging ? styles.dragging : ""}`}
+        className={`${styles.dropzone} ${variant === "hero" ? styles.dropzoneHero : ""} ${
+          isDragging ? styles.dragging : ""
+        }`}
         onClick={() => inputRef.current?.click()}
         onDragOver={(event) => {
           event.preventDefault();

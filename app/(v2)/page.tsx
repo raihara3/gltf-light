@@ -6,6 +6,7 @@ import { ServiceInfo } from "./components/ServiceInfo";
 import { FileDropzone } from "./components/FileDropzone";
 import { ModelSummaryCard } from "./components/ModelSummaryCard";
 import { Copyright } from "./components/Copyright";
+import { Stage } from "./viewer/Stage";
 import styles from "./styles/page.module.scss";
 
 /**
@@ -32,13 +33,13 @@ export default function V2Page() {
           )}
         </aside>
         <section className={styles.viewer} aria-label="3Dビュー">
-          <div className={styles.viewerBody}>
-            {hasModel ? (
-              <p className={styles.viewerNote}>3Dビューアは今後のステップで実装されます</p>
-            ) : (
-              <FileDropzone />
-            )}
-          </div>
+          {hasModel ? (
+            <Stage />
+          ) : (
+            <div className={styles.viewerBody}>
+              <FileDropzone variant="hero" />
+            </div>
+          )}
           <Copyright />
         </section>
       </main>
