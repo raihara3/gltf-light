@@ -12,6 +12,7 @@
 
   // Surface & text ramp (light)
   --color-bg: #f7f5f2; // Figma color/biege-3
+  --color-viewer-bg: #ffffff; // 3D viewer backdrop (white in light)
   --color-surface: #ffffff; // Figma color/white — cards, active tab
   --color-track: #eeece8; // Figma color/biege-10 — segmented control track
   --color-border: #e6e3de; // Figma color/black-1
@@ -59,6 +60,7 @@
   --color-highlight: #6f9bff;
 
   --color-bg: #1b1a18;
+  --color-viewer-bg: #1b1a18; // dark: unchanged (matches the app background)
   --color-surface: #232220;
   --color-track: #2b2a27;
   --color-border: #3a3833;

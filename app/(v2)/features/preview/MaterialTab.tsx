@@ -26,20 +26,31 @@ function ValueBar({ label, value }: { label: string; value: number }) {
  * roughness / metalness bars (hidden by default).
  */
 export function MaterialTab({ stage }: { stage: StageController }) {
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [openIds, setOpenIds] = useState<Set<string>>(new Set());
+
+  const toggle = (id: string) =>
+    setOpenIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
 
   return (
     <TabCard Icon={SphereIcon} title="マテリアル">
       <ul className={styles.list}>
         {stage.materials.map((material) => {
-          const open = selectedId === material.id;
+          const open = openIds.has(material.id);
           return (
             <li key={material.id}>
               <button
                 type="button"
                 className={`${styles.row} ${open ? styles.rowActive : ""}`}
                 aria-expanded={open}
-                onClick={() => setSelectedId(open ? null : material.id)}
+                onClick={() => toggle(material.id)}
               >
                 <span className={styles.headIcon}>
                   <SphereIcon size={14} />
