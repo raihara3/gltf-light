@@ -6,6 +6,10 @@ body {
   color: $white;
 }
 
+[data-app="legacy"] {
+  font-family: var(--font-mono);
+}
+
 label {
   display: block;
 

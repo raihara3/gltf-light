@@ -2,7 +2,10 @@
 import type { Metadata } from "next";
 import { Sometype_Mono } from "next/font/google";
 
-const sometypeMono = Sometype_Mono({ subsets: ["latin"] });
+const sometypeMono = Sometype_Mono({
+  subsets: ["latin"],
+  variable: "--font-mono",
+});
 
 export const metadata: Metadata = {
   title: "GLTF Light",
@@ -15,8 +18,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body className={sometypeMono.className}>{children}</body>
+    <html lang="en" className={sometypeMono.variable}>
+      <body>{children}</body>
     </html>
   );
 }
