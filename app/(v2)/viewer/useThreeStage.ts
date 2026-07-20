@@ -8,6 +8,7 @@ import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass.js";
 import { OutlinePass } from "three/examples/jsm/postprocessing/OutlinePass.js";
 import { OutputPass } from "three/examples/jsm/postprocessing/OutputPass.js";
 import { useModelStore } from "../store/modelStore";
+import { parseGlbTextureSizes, type MaterialTextureSizes } from "../lib/glbTextureSizes";
 
 const OUTLINE_COLOR = "#2f6bff"; // v2 highlight (electric blue)
 const CLICK_DRAG_THRESHOLD = 4; // px — distinguishes a pick from an orbit drag
@@ -23,6 +24,7 @@ export interface MaterialTextureInfo {
   name: string;
   width: number;
   height: number;
+  byteLength: number;
 }
 
 export interface MaterialInfo {
@@ -112,7 +114,8 @@ function countTriangles(root: THREE.Object3D): number {
 
 function collectMaterials(
   root: THREE.Object3D,
-  registry: Map<string, THREE.Material>
+  registry: Map<string, THREE.Material>,
+  textureSizes: MaterialTextureSizes
 ): MaterialInfo[] {
   const infos: MaterialInfo[] = [];
   root.traverse((object) => {
@@ -126,11 +129,12 @@ function collectMaterials(
       registry.set(entry.uuid, entry);
       const standard = entry as THREE.MeshStandardMaterial;
       const record = standard as unknown as Record<string, THREE.Texture | undefined>;
+      const sizes = textureSizes.get(entry.name) ?? {};
       const textures: MaterialTextureInfo[] = [];
       MAP_KEYS.forEach(({ key, label }) => {
         const thumb = textureThumbnail(record[key]);
         if (thumb) {
-          textures.push({ type: label, ...thumb });
+          textures.push({ type: label, byteLength: sizes[label] ?? 0, ...thumb });
         }
       });
       infos.push({
@@ -377,7 +381,7 @@ export function useThreeStage(bytes: ArrayBuffer | null) {
           polygons: countTriangles(model),
         });
         stage.materials = new Map();
-        setMaterials(collectMaterials(model, stage.materials));
+        setMaterials(collectMaterials(model, stage.materials, parseGlbTextureSizes(bytes)));
         setMeshTree(buildMeshTree(model));
 
         // Fit camera to the model bounds.

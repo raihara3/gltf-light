@@ -3,6 +3,7 @@
 import { useState } from "react";
 import type { StageController } from "../../viewer/useThreeStage";
 import { useUiStore } from "../../store/uiStore";
+import { formatFileSize } from "../../lib/formatFileSize";
 import { SphereIcon, ZapIcon, ArrowRightIcon } from "../../icons";
 import { TabCard } from "./TabCard";
 import styles from "./MaterialTab.module.scss";
@@ -75,6 +76,9 @@ export function MaterialTab({ stage }: { stage: StageController }) {
                               <span className={styles.textureDim}>
                                 {texture.width} × {texture.height} px
                               </span>
+                            )}
+                            {texture.byteLength > 0 && (
+                              <span className={styles.textureSize}>{formatFileSize(texture.byteLength)}</span>
                             )}
                           </div>
                         </div>
