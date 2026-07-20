@@ -131,6 +131,7 @@ export function useThreeStage(bytes: ArrayBuffer | null) {
   const raycasterRef = useRef(new THREE.Raycaster());
   const pointerDownRef = useRef<{ x: number; y: number } | null>(null);
   const isPlayingRef = useRef(false);
+  const activeClipsRef = useRef<string[]>([]);
   const setMeta = useModelStore((state) => state.setMeta);
 
   const [animations, setAnimations] = useState<StageAnimation[]>([]);
@@ -142,10 +143,13 @@ export function useThreeStage(bytes: ArrayBuffer | null) {
   const [meshTree, setMeshTree] = useState<MeshNode | null>(null);
   const [selectedUuid, setSelectedUuid] = useState<string | null>(null);
 
-  // Keep a ref in sync so the render loop can gate the mixer without re-running.
+  // Keep refs in sync so the render loop can gate the mixer without re-running.
   useEffect(() => {
     isPlayingRef.current = isPlaying;
   }, [isPlaying]);
+  useEffect(() => {
+    activeClipsRef.current = activeClips;
+  }, [activeClips]);
 
   const applySelection = useCallback((uuid: string | null) => {
     const stage = refs.current;
@@ -422,17 +426,21 @@ export function useThreeStage(bytes: ArrayBuffer | null) {
     if (!action) {
       return;
     }
-    setActiveClips((prev) => {
-      if (prev.includes(name)) {
-        action.stop();
-        return prev.filter((entry) => entry !== name);
-      }
+    const previous = activeClipsRef.current;
+    let next: string[];
+    if (previous.includes(name)) {
+      action.stop();
+      next = previous.filter((entry) => entry !== name);
+    } else {
       action.reset().play();
-      const clipDuration = stage.clips.get(name)?.duration ?? 0;
-      setDuration((current) => Math.max(current, clipDuration));
-      setIsPlaying(true);
-      return [...prev, name];
-    });
+      next = [...previous, name];
+    }
+    setActiveClips(next);
+    // Pause playback (and freeze the seek) when nothing is selected.
+    setIsPlaying(next.length > 0);
+    setDuration(
+      next.reduce((max, clip) => Math.max(max, stage.clips.get(clip)?.duration ?? 0), 0)
+    );
   }, []);
 
   const seek = useCallback((time: number) => {

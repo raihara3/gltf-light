@@ -21,6 +21,17 @@
   }
 }
 
+.head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.headIcon {
+  display: inline-flex;
+  color: var(--color-text-muted);
+}
+
 .name {
   font-weight: 600;
   font-size: var(--font-size-14);
@@ -76,7 +87,7 @@
   top: 50%;
   height: 2px;
   transform: translateY(-50%);
-  background: var(--color-border-strong);
+  background: var(--color-border-2);
 }
 
 .knob {
@@ -87,5 +98,5 @@
   transform: translate(-50%, -50%);
   border: 2px solid var(--color-surface);
   border-radius: var(--radius-pill);
-  background: var(--color-highlight);
+  background: var(--color-text-faint);
 }

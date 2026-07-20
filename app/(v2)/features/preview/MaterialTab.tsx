@@ -36,7 +36,12 @@ export function MaterialTab({ stage }: { stage: StageController }) {
       <ul className={styles.list}>
         {stage.materials.map((material) => (
           <li key={material.id} className={styles.material}>
-            <span className={styles.name}>{material.name}</span>
+            <span className={styles.head}>
+              <span className={styles.headIcon}>
+                <SphereIcon size={14} />
+              </span>
+              <span className={styles.name}>{material.name}</span>
+            </span>
             {material.maps.length > 0 && (
               <div className={styles.maps}>
                 {material.maps.map((map) => (
