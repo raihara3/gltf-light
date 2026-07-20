@@ -1,21 +1,54 @@
+"use client";
+
+import { useRef, useState } from "react";
+import { useModelUpload } from "../hooks/useModelUpload";
 import { UploadIcon } from "../icons";
 import styles from "./FileDropzone.module.scss";
 
-/**
- * Upload dropzone (visual only for now). File handling and 3D parsing are added
- * in a later issue; this renders the approved empty-state prompt.
- */
+/** Upload dropzone: click or drag & drop a `.glb` into modelStore. */
 export function FileDropzone() {
+  const { acceptFiles, error } = useModelUpload();
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [isDragging, setIsDragging] = useState(false);
+
   return (
-    <div className={styles.dropzone}>
-      <span className={styles.icon}>
-        <UploadIcon size={24} />
-      </span>
-      <div className={styles.text}>
-        <p className={styles.title}>3Dモデルをアップロード</p>
-        <p className={styles.hint}>ドラッグ&amp;ドロップ、またはクリック（.glb）</p>
-        <p className={styles.note}>※サーバーにアップロードすることはありません</p>
-      </div>
+    <div className={styles.wrapper}>
+      <button
+        type="button"
+        className={`${styles.dropzone} ${isDragging ? styles.dragging : ""}`}
+        onClick={() => inputRef.current?.click()}
+        onDragOver={(event) => {
+          event.preventDefault();
+          setIsDragging(true);
+        }}
+        onDragLeave={() => setIsDragging(false)}
+        onDrop={(event) => {
+          event.preventDefault();
+          setIsDragging(false);
+          void acceptFiles(event.dataTransfer.files);
+        }}
+      >
+        <input
+          ref={inputRef}
+          type="file"
+          accept=".glb"
+          hidden
+          onChange={(event) => void acceptFiles(event.target.files)}
+        />
+        <span className={styles.icon}>
+          <UploadIcon size={24} />
+        </span>
+        <span className={styles.text}>
+          <span className={styles.title}>3Dモデルをアップロード</span>
+          <span className={styles.hint}>ドラッグ&amp;ドロップ、またはクリック（.glb）</span>
+          <span className={styles.note}>※サーバーにアップロードすることはありません</span>
+        </span>
+      </button>
+      {error && (
+        <p className={styles.error} role="alert">
+          {error}
+        </p>
+      )}
     </div>
   );
 }
