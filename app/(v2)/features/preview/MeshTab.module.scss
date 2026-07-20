@@ -1,11 +1,48 @@
-.tree {
+.pickToggle {
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
   width: 100%;
-  margin: 0;
   padding: 0;
-  list-style: none;
+  border: none;
+  background: transparent;
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
 }
 
-.group {
+.check {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 12px;
+  height: 12px;
+  border: 1.5px solid var(--color-text-faint);
+  border-radius: 3px;
+  background: var(--color-surface);
+  color: transparent;
+}
+
+.checkOn {
+  border-color: var(--color-highlight);
+  background: var(--color-highlight);
+  color: var(--color-on-accent);
+}
+
+.pickLabel {
+  font-size: var(--font-size-11);
+  line-height: 14px;
+  color: var(--color-text-muted);
+}
+
+.treeWrap {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.tree {
+  min-width: max-content;
   margin: 0;
   padding: 0;
   list-style: none;
@@ -15,11 +52,12 @@
   display: flex;
   align-items: center;
   gap: var(--space-4);
+  min-width: 100%;
   padding: var(--space-2) var(--space-8);
   border-radius: var(--radius-sm);
 
   &:hover {
-    background: var(--color-bg);
+    background: var(--color-highlight-soft);
   }
 }
 
@@ -52,13 +90,13 @@
   align-items: center;
   gap: var(--space-4);
   flex: 1;
-  min-width: 0;
   padding: var(--space-4) 0;
   border: none;
   background: transparent;
   color: var(--color-text-muted);
   font-family: inherit;
   text-align: left;
+  white-space: nowrap;
   cursor: pointer;
 
   svg {
@@ -67,9 +105,34 @@
 }
 
 .name {
-  overflow: hidden;
   font-size: var(--font-size-14);
   line-height: 18px;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+}
+
+.cta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  width: 100%;
+  padding: var(--space-12) var(--space-8);
+  border: none;
+  border-radius: var(--radius-sm);
+  background: var(--color-accent);
+  color: var(--color-on-accent);
+  font-family: inherit;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+
+  &:hover {
+    background: var(--color-accent-strong);
+  }
+}
+
+.ctaLabel {
+  flex: 1;
+  min-width: 0;
+  font-weight: 600;
+  font-size: var(--font-size-14);
+  line-height: 18px;
+  text-align: left;
 }

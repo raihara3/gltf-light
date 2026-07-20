@@ -17,12 +17,17 @@ export interface StageAnimation {
   duration: number;
 }
 
+export interface MaterialTextureInfo {
+  type: string;
+  url: string;
+}
+
 export interface MaterialInfo {
   id: string;
   name: string;
   roughness: number;
   metalness: number;
-  maps: string[];
+  textures: MaterialTextureInfo[];
 }
 
 export interface MeshNode {
@@ -33,7 +38,36 @@ export interface MeshNode {
   children: MeshNode[];
 }
 
-const MAP_KEYS = ["map", "normalMap", "roughnessMap", "metalnessMap", "emissiveMap", "aoMap"] as const;
+const MAP_KEYS: { key: string; label: string }[] = [
+  { key: "map", label: "baseColor" },
+  { key: "normalMap", label: "normal" },
+  { key: "roughnessMap", label: "roughness" },
+  { key: "metalnessMap", label: "metalness" },
+  { key: "emissiveMap", label: "emissive" },
+  { key: "aoMap", label: "ao" },
+];
+
+/** Draw a texture's source image into a small canvas and return a data URL. */
+function textureThumbnail(texture: THREE.Texture | null | undefined): string | null {
+  const image = texture?.image as CanvasImageSource | undefined;
+  if (!image) {
+    return null;
+  }
+  try {
+    const size = 56;
+    const canvas = document.createElement("canvas");
+    canvas.width = size;
+    canvas.height = size;
+    const context = canvas.getContext("2d");
+    if (!context) {
+      return null;
+    }
+    context.drawImage(image, 0, 0, size, size);
+    return canvas.toDataURL("image/png");
+  } catch {
+    return null;
+  }
+}
 
 /** Free GPU resources held by a model subtree before discarding it. */
 function disposeObject(root: THREE.Object3D) {
@@ -81,12 +115,20 @@ function collectMaterials(
       }
       registry.set(entry.uuid, entry);
       const standard = entry as THREE.MeshStandardMaterial;
+      const record = standard as unknown as Record<string, THREE.Texture | undefined>;
+      const textures: MaterialTextureInfo[] = [];
+      MAP_KEYS.forEach(({ key, label }) => {
+        const url = textureThumbnail(record[key]);
+        if (url) {
+          textures.push({ type: label, url });
+        }
+      });
       infos.push({
         id: entry.uuid,
         name: entry.name || "Material",
         roughness: typeof standard.roughness === "number" ? standard.roughness : 0,
         metalness: typeof standard.metalness === "number" ? standard.metalness : 0,
-        maps: MAP_KEYS.filter((key) => (standard as unknown as Record<string, unknown>)[key]),
+        textures,
       });
     });
   });
@@ -142,6 +184,8 @@ export function useThreeStage(bytes: ArrayBuffer | null) {
   const [materials, setMaterials] = useState<MaterialInfo[]>([]);
   const [meshTree, setMeshTree] = useState<MeshNode | null>(null);
   const [selectedUuid, setSelectedUuid] = useState<string | null>(null);
+  const [pickingEnabled, setPickingEnabled] = useState(true);
+  const pickingEnabledRef = useRef(true);
 
   // Keep refs in sync so the render loop can gate the mixer without re-running.
   useEffect(() => {
@@ -150,6 +194,9 @@ export function useThreeStage(bytes: ArrayBuffer | null) {
   useEffect(() => {
     activeClipsRef.current = activeClips;
   }, [activeClips]);
+  useEffect(() => {
+    pickingEnabledRef.current = pickingEnabled;
+  }, [pickingEnabled]);
 
   const applySelection = useCallback((uuid: string | null) => {
     const stage = refs.current;
@@ -383,7 +430,7 @@ export function useThreeStage(bytes: ArrayBuffer | null) {
       const start = pointerDownRef.current;
       pointerDownRef.current = null;
       const stage = refs.current;
-      if (!start || !stage || !stage.model) {
+      if (!start || !stage || !stage.model || !pickingEnabledRef.current) {
         return;
       }
       if (Math.hypot(event.clientX - start.x, event.clientY - start.y) > CLICK_DRAG_THRESHOLD) {
@@ -499,6 +546,8 @@ export function useThreeStage(bytes: ArrayBuffer | null) {
     meshTree,
     selectedUuid,
     selectMesh,
+    pickingEnabled,
+    setPickingEnabled,
     resetView,
   };
 }

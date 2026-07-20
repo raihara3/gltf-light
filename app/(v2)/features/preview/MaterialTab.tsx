@@ -1,18 +1,10 @@
 "use client";
 
+import { useState } from "react";
 import type { StageController } from "../../viewer/useThreeStage";
 import { SphereIcon } from "../../icons";
 import { TabCard } from "./TabCard";
 import styles from "./MaterialTab.module.scss";
-
-const MAP_LABELS: Record<string, string> = {
-  map: "baseColor",
-  normalMap: "normal",
-  roughnessMap: "roughness",
-  metalnessMap: "metalness",
-  emissiveMap: "emissive",
-  aoMap: "ao",
-};
 
 /** Read-only value bar (Figma Slider): a thin line with a knob at `value` (0–1). */
 function ValueBar({ label, value }: { label: string; value: number }) {
@@ -29,32 +21,51 @@ function ValueBar({ label, value }: { label: string; value: number }) {
   );
 }
 
-/** 見た目: materials with read-only roughness / metalness value bars. */
+/**
+ * 見た目: material list. Selecting a material reveals its textures and read-only
+ * roughness / metalness bars (hidden by default).
+ */
 export function MaterialTab({ stage }: { stage: StageController }) {
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+
   return (
     <TabCard Icon={SphereIcon} title="マテリアル">
       <ul className={styles.list}>
-        {stage.materials.map((material) => (
-          <li key={material.id} className={styles.material}>
-            <span className={styles.head}>
-              <span className={styles.headIcon}>
-                <SphereIcon size={14} />
-              </span>
-              <span className={styles.name}>{material.name}</span>
-            </span>
-            {material.maps.length > 0 && (
-              <div className={styles.maps}>
-                {material.maps.map((map) => (
-                  <span key={map} className={styles.mapChip}>
-                    {MAP_LABELS[map] ?? map}
-                  </span>
-                ))}
-              </div>
-            )}
-            <ValueBar label="粗さ (Roughness)" value={material.roughness} />
-            <ValueBar label="金属感 (Metalness)" value={material.metalness} />
-          </li>
-        ))}
+        {stage.materials.map((material) => {
+          const open = selectedId === material.id;
+          return (
+            <li key={material.id}>
+              <button
+                type="button"
+                className={`${styles.row} ${open ? styles.rowActive : ""}`}
+                aria-expanded={open}
+                onClick={() => setSelectedId(open ? null : material.id)}
+              >
+                <span className={styles.headIcon}>
+                  <SphereIcon size={14} />
+                </span>
+                <span className={styles.name}>{material.name}</span>
+              </button>
+              {open && (
+                <div className={styles.details}>
+                  {material.textures.length > 0 && (
+                    <div className={styles.textures}>
+                      {material.textures.map((texture) => (
+                        <figure key={texture.type} className={styles.texture}>
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img className={styles.thumb} src={texture.url} alt={texture.type} />
+                          <figcaption className={styles.textureLabel}>{texture.type}</figcaption>
+                        </figure>
+                      ))}
+                    </div>
+                  )}
+                  <ValueBar label="粗さ (Roughness)" value={material.roughness} />
+                  <ValueBar label="金属感 (Metalness)" value={material.metalness} />
+                </div>
+              )}
+            </li>
+          );
+        })}
       </ul>
     </TabCard>
   );
