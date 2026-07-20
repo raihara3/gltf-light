@@ -6,6 +6,7 @@ import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment
 import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer.js";
 import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass.js";
 import { OutlinePass } from "three/examples/jsm/postprocessing/OutlinePass.js";
+import { OutputPass } from "three/examples/jsm/postprocessing/OutputPass.js";
 
 const OUTLINE_COLOR = "#2f6bff"; // v2 highlight (electric blue)
 const CLICK_DRAG_THRESHOLD = 4; // px — distinguishes a pick from an orbit drag
@@ -77,17 +78,23 @@ export function useThreeStage(bytes: ArrayBuffer | null) {
     const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
     camera.position.set(0, 0, 3);
 
-    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    renderer.setSize(width, height);
+    const renderer = new THREE.WebGLRenderer({
+      antialias: true,
+      alpha: true,
+      preserveDrawingBuffer: true,
+      powerPreference: "high-performance",
+    });
     renderer.setClearColor(0x000000, 0);
+    renderer.setSize(width, height);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
     renderer.toneMappingExposure = 1;
     container.appendChild(renderer.domElement);
 
+    // Match legacy exactly: sharp RoomEnvironment IBL (no PMREM blur sigma).
     const pmrem = new THREE.PMREMGenerator(renderer);
-    scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+    scene.environment = pmrem.fromScene(new RoomEnvironment()).texture;
 
     scene.add(new THREE.AmbientLight(0xffffff, 0.5));
     const directional = new THREE.DirectionalLight(0xffffff, 0.5);
@@ -98,6 +105,7 @@ export function useThreeStage(bytes: ArrayBuffer | null) {
     controls.enableDamping = true;
 
     const composer = new EffectComposer(renderer);
+    composer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     composer.addPass(new RenderPass(scene, camera));
     const outlinePass = new OutlinePass(new THREE.Vector2(width, height), scene, camera);
     outlinePass.visibleEdgeColor.set(OUTLINE_COLOR);
@@ -105,6 +113,10 @@ export function useThreeStage(bytes: ArrayBuffer | null) {
     outlinePass.edgeStrength = 4;
     outlinePass.edgeThickness = 1;
     composer.addPass(outlinePass);
+    // OutputPass applies tone mapping + sRGB conversion to the composed frame.
+    // Without it, EffectComposer emits linear color and materials look far too
+    // saturated/dark (matches the legacy viewer's pipeline).
+    composer.addPass(new OutputPass());
 
     refs.current = {
       renderer,
