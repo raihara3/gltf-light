@@ -6,6 +6,13 @@
   width: min(600px, 100%);
 }
 
+// Hero: fill the whole preview area so the drop target is large.
+.wrapperHero {
+  flex: 1;
+  align-self: stretch;
+  width: 100%;
+}
+
 .dropzone {
   display: flex;
   flex-direction: column;
@@ -27,6 +34,11 @@
     border-color: var(--color-highlight);
     background: var(--color-bg);
   }
+}
+
+.dropzoneHero {
+  flex: 1;
+  gap: var(--space-18);
 }
 
 .icon {

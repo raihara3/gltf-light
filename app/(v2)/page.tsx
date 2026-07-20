@@ -37,7 +37,7 @@ export default function V2Page() {
             <Stage />
           ) : (
             <div className={styles.viewerBody}>
-              <FileDropzone />
+              <FileDropzone variant="hero" />
             </div>
           )}
           <Copyright />
