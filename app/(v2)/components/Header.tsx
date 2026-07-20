@@ -25,9 +25,9 @@ export function Header() {
 
   return (
     <header className={styles.header}>
-      <div className={styles.brand}>
+      <div className={styles.left}>
         <span className={styles.brandMark}>
-          <RocketIcon size={22} />
+          <RocketIcon size={24} />
         </span>
         <span className={styles.brandText}>
           <span className={styles.brandTitle}>gltf-light</span>
@@ -35,23 +35,25 @@ export function Header() {
         </span>
       </div>
 
-      <div className={styles.modeTabs} role="tablist" aria-label="表示モード">
-        {MODE_TABS.map(({ value, label, Icon }) => {
-          const isActive = mode === value;
-          return (
-            <button
-              key={value}
-              type="button"
-              role="tab"
-              aria-selected={isActive}
-              className={`${styles.modeTab} ${isActive ? styles.modeTabActive : ""}`}
-              onClick={() => setMode(value)}
-            >
-              <Icon size={16} />
-              {label}
-            </button>
-          );
-        })}
+      <div className={styles.center}>
+        <div className={styles.modeTabs} role="tablist" aria-label="表示モード">
+          {MODE_TABS.map(({ value, label, Icon }) => {
+            const isActive = mode === value;
+            return (
+              <button
+                key={value}
+                type="button"
+                role="tab"
+                aria-selected={isActive}
+                className={`${styles.modeTab} ${isActive ? styles.modeTabActive : ""}`}
+                onClick={() => setMode(value)}
+              >
+                <Icon size={14} />
+                {label}
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       <div className={styles.right}>
@@ -61,12 +63,14 @@ export function Header() {
           onClick={toggleTheme}
           aria-label={theme === "light" ? "ダークモードに切り替え" : "ライトモードに切り替え"}
         >
-          {theme === "light" ? <MoonIcon size={18} /> : <SunIcon size={18} />}
+          {theme === "light" ? <MoonIcon size={16} /> : <SunIcon size={16} />}
         </button>
-        <span className={styles.version}>v2.0</span>
-        <Link className={styles.legacyLink} href="/legacy">
-          Previous version
-        </Link>
+        <span className={styles.meta}>
+          <span className={styles.version}>v2.0</span>
+          <Link className={styles.legacyLink} href="/legacy">
+            Previous version
+          </Link>
+        </span>
       </div>
     </header>
   );
