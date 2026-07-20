@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import type { StageController } from "../../viewer/useThreeStage";
-import { SphereIcon } from "../../icons";
+import { useUiStore } from "../../store/uiStore";
+import { SphereIcon, ZapIcon, ArrowRightIcon } from "../../icons";
 import { TabCard } from "./TabCard";
 import styles from "./MaterialTab.module.scss";
 
@@ -23,10 +24,11 @@ function ValueBar({ label, value }: { label: string; value: number }) {
 
 /**
  * 見た目: material list. Selecting a material reveals its textures and read-only
- * roughness / metalness bars (hidden by default).
+ * roughness / metalness bars. Multiple materials can stay open at once.
  */
 export function MaterialTab({ stage }: { stage: StageController }) {
   const [openIds, setOpenIds] = useState<Set<string>>(new Set());
+  const setMode = useUiStore((state) => state.setMode);
 
   const toggle = (id: string) =>
     setOpenIds((prev) => {
@@ -60,13 +62,22 @@ export function MaterialTab({ stage }: { stage: StageController }) {
               {open && (
                 <div className={styles.details}>
                   {material.textures.length > 0 && (
-                    <div className={styles.textures}>
-                      {material.textures.map((texture) => (
-                        <figure key={texture.type} className={styles.texture}>
+                    <div className={styles.textureBlock}>
+                      <span className={styles.textureHeading}>テクスチャ</span>
+                      {material.textures.map((texture, index) => (
+                        <div key={`${texture.type}-${index}`} className={styles.texture}>
                           {/* eslint-disable-next-line @next/next/no-img-element */}
                           <img className={styles.thumb} src={texture.url} alt={texture.type} />
-                          <figcaption className={styles.textureLabel}>{texture.type}</figcaption>
-                        </figure>
+                          <div className={styles.textureMeta}>
+                            <span className={styles.textureType}>{texture.type}</span>
+                            {texture.name && <span className={styles.textureName}>{texture.name}</span>}
+                            {texture.width > 0 && (
+                              <span className={styles.textureDim}>
+                                {texture.width} × {texture.height} px
+                              </span>
+                            )}
+                          </div>
+                        </div>
                       ))}
                     </div>
                   )}
@@ -78,6 +89,12 @@ export function MaterialTab({ stage }: { stage: StageController }) {
           );
         })}
       </ul>
+
+      <button type="button" className={styles.cta} onClick={() => setMode("optimize")}>
+        <ZapIcon size={16} />
+        <span className={styles.ctaLabel}>マテリアルの最適化をする</span>
+        <ArrowRightIcon size={16} />
+      </button>
     </TabCard>
   );
 }

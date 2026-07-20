@@ -38,7 +38,6 @@
 
 .name {
   overflow: hidden;
-  font-weight: 600;
   font-size: var(--font-size-14);
   line-height: 18px;
   color: var(--color-text);
@@ -53,33 +52,62 @@
   padding: var(--space-8) var(--space-8) var(--space-12);
 }
 
-.textures {
+.textureBlock {
   display: flex;
-  flex-wrap: wrap;
+  flex-direction: column;
   gap: var(--space-8);
+}
+
+.textureHeading {
+  font-weight: 600;
+  font-size: var(--font-size-11);
+  line-height: 14px;
+  color: var(--color-text);
 }
 
 .texture {
   display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-  margin: 0;
+  align-items: center;
+  gap: var(--space-8);
 }
 
 .thumb {
-  width: 56px;
-  height: 56px;
+  flex-shrink: 0;
+  width: 48px;
+  height: 48px;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);
   background: var(--color-bg);
   object-fit: cover;
 }
 
-.textureLabel {
-  font-size: var(--font-size-9);
-  line-height: 12px;
+.textureMeta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.textureType {
+  font-size: var(--font-size-11);
+  line-height: 14px;
   color: var(--color-text-faint);
-  text-align: center;
+}
+
+.textureName {
+  overflow: hidden;
+  font-weight: 600;
+  font-size: var(--font-size-14);
+  line-height: 18px;
+  color: var(--color-text);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.textureDim {
+  font-size: var(--font-size-11);
+  line-height: 14px;
+  color: var(--color-text-muted);
 }
 
 .param {
@@ -127,4 +155,32 @@
   border: 2px solid var(--color-surface);
   border-radius: var(--radius-pill);
   background: var(--color-text-faint);
+}
+
+.cta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  width: 100%;
+  padding: var(--space-12) var(--space-8);
+  border: none;
+  border-radius: var(--radius-sm);
+  background: var(--color-accent);
+  color: var(--color-on-accent);
+  font-family: inherit;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+
+  &:hover {
+    background: var(--color-accent-strong);
+  }
+}
+
+.ctaLabel {
+  flex: 1;
+  min-width: 0;
+  font-weight: 600;
+  font-size: var(--font-size-14);
+  line-height: 18px;
+  text-align: left;
 }

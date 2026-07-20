@@ -20,6 +20,9 @@ export interface StageAnimation {
 export interface MaterialTextureInfo {
   type: string;
   url: string;
+  name: string;
+  width: number;
+  height: number;
 }
 
 export interface MaterialInfo {
@@ -39,17 +42,19 @@ export interface MeshNode {
 }
 
 const MAP_KEYS: { key: string; label: string }[] = [
-  { key: "map", label: "baseColor" },
-  { key: "normalMap", label: "normal" },
-  { key: "roughnessMap", label: "roughness" },
-  { key: "metalnessMap", label: "metalness" },
-  { key: "emissiveMap", label: "emissive" },
-  { key: "aoMap", label: "ao" },
+  { key: "map", label: "BaseColor" },
+  { key: "normalMap", label: "Normal" },
+  { key: "roughnessMap", label: "Roughness" },
+  { key: "metalnessMap", label: "Metalness" },
+  { key: "emissiveMap", label: "Emissive" },
+  { key: "aoMap", label: "AO" },
 ];
 
-/** Draw a texture's source image into a small canvas and return a data URL. */
-function textureThumbnail(texture: THREE.Texture | null | undefined): string | null {
-  const image = texture?.image as CanvasImageSource | undefined;
+/** Draw a texture's source image into a small canvas and return a data URL + size. */
+function textureThumbnail(
+  texture: THREE.Texture | null | undefined
+): { url: string; width: number; height: number; name: string } | null {
+  const image = texture?.image as (CanvasImageSource & { width?: number; height?: number }) | undefined;
   if (!image) {
     return null;
   }
@@ -63,7 +68,12 @@ function textureThumbnail(texture: THREE.Texture | null | undefined): string | n
       return null;
     }
     context.drawImage(image, 0, 0, size, size);
-    return canvas.toDataURL("image/png");
+    return {
+      url: canvas.toDataURL("image/png"),
+      width: image.width ?? 0,
+      height: image.height ?? 0,
+      name: texture?.name || (texture?.userData?.filename as string) || "",
+    };
   } catch {
     return null;
   }
@@ -118,9 +128,9 @@ function collectMaterials(
       const record = standard as unknown as Record<string, THREE.Texture | undefined>;
       const textures: MaterialTextureInfo[] = [];
       MAP_KEYS.forEach(({ key, label }) => {
-        const url = textureThumbnail(record[key]);
-        if (url) {
-          textures.push({ type: label, url });
+        const thumb = textureThumbnail(record[key]);
+        if (thumb) {
+          textures.push({ type: label, ...thumb });
         }
       });
       infos.push({
