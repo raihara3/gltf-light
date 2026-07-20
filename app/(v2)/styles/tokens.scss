@@ -1,0 +1,73 @@
+// Design tokens for v2, sourced from the approved Figma design.
+// Scoped to the `[data-app="v2"]` wrapper so they never leak into legacy.
+// Light is the default; `[data-theme="dark"]` overrides the surface/text ramp.
+// Brand hues (accent/highlight) keep their role across themes.
+
+[data-app="v2"] {
+  // Brand (role-stable across themes)
+  --color-accent: #ff5b1d; // coral — CTA / active tab / step number
+  --color-accent-strong: #ed4f14; // hover / pressed
+  --color-accent-soft: #ffece4; // tinted accent surface
+  --color-on-accent: #ffffff; // text/icon on an accent fill
+  --color-highlight: #2f6bff; // electric blue — selection / links / focus
+
+  // Surface & text ramp (light)
+  --color-bg: #f7f5f2;
+  --color-surface: #ffffff;
+  --color-surface-2: #f2efe9;
+  --color-border: #e6e3de;
+  --color-border-strong: #d9d5ce;
+  --color-text: #26241f;
+  --color-text-muted: #6b6155;
+  --color-text-faint: #928d84;
+
+  // Radius
+  --radius-sm: 8px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-pill: 999px;
+
+  // Spacing (Figma spacers + 8pt rhythm)
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 18px;
+  --space-6: 24px;
+  --space-7: 30px;
+
+  // Typography
+  --font-sans: var(--font-inter), "Hiragino Sans", "Hiragino Kaku Gothic ProN",
+    "Noto Sans JP", system-ui, sans-serif;
+  // `--font-mono` is provided globally by the root layout (Sometype Mono).
+  --font-size-xs: 11px;
+  --font-size-sm: 12px;
+  --font-size-base: 14px;
+  --font-size-md: 16px;
+  --font-size-lg: 18px;
+
+  // Elevation
+  --shadow-sm: 0 1px 2px rgba(38, 36, 31, 0.04), 0 1px 3px rgba(38, 36, 31, 0.06);
+  --shadow-md: 0 2px 4px rgba(38, 36, 31, 0.05), 0 8px 20px rgba(38, 36, 31, 0.06);
+  --shadow-cta: 0 6px 16px rgba(255, 91, 29, 0.3);
+}
+
+[data-app="v2"][data-theme="dark"] {
+  --color-accent: #ff7a52;
+  --color-accent-strong: #ff6a3d;
+  --color-accent-soft: #3a2a22;
+  --color-highlight: #6f9bff;
+
+  --color-bg: #1b1a18;
+  --color-surface: #232220;
+  --color-surface-2: #2b2a27;
+  --color-border: #3a3833;
+  --color-border-strong: #4a4842;
+  --color-text: #f4ede2;
+  --color-text-muted: #b3a99c;
+  --color-text-faint: #8f887c;
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4), 0 1px 3px rgba(0, 0, 0, 0.5);
+  --shadow-md: 0 2px 4px rgba(0, 0, 0, 0.4), 0 8px 20px rgba(0, 0, 0, 0.5);
+  --shadow-cta: 0 6px 16px rgba(255, 122, 82, 0.35);
+}
