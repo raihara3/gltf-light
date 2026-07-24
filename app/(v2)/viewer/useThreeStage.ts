@@ -61,7 +61,7 @@ function textureThumbnail(
     return null;
   }
   try {
-    const size = 56;
+    const size = 128;
     const canvas = document.createElement("canvas");
     canvas.width = size;
     canvas.height = size;
