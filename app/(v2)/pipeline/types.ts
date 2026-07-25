@@ -1,9 +1,14 @@
 // Typed message contract between the main thread and the optimize Worker.
 // Kept free of store/zustand imports so the Worker bundle stays lean.
 
+/** Max texture edge length; `"off"` disables texture downscaling. */
+export type TextureMaxSize = 2048 | 1024 | 512 | "off";
+
 export interface PipelineSettings {
   /** prune unused data + dedup duplicates. */
   pruneDedup: boolean;
+  /** Downscale every texture map to this max edge; `"off"` keeps them. */
+  textureMaxSize: TextureMaxSize;
 }
 
 export interface PipelineStats {

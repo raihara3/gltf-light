@@ -26,6 +26,7 @@ export function useOptimizePipeline() {
   const bytes = useModelStore((state) => state.originalBytes);
   const originalSize = useModelStore((state) => state.meta?.size ?? 0);
   const pruneDedup = useOptimizeStore((state) => state.settings.pruneDedup);
+  const textureMaxSize = useOptimizeStore((state) => state.settings.textureMaxSize);
   const setStatus = useOptimizeStore((state) => state.setStatus);
   const setResult = useOptimizeStore((state) => state.setResult);
   const setEstimate = useOptimizeStore((state) => state.setEstimate);
@@ -39,7 +40,7 @@ export function useOptimizePipeline() {
     setEstimate(null);
 
     const cancelIdle = whenIdle(() => {
-      runPipeline(bytes, { pruneDedup })
+      runPipeline(bytes, { pruneDedup, textureMaxSize })
         .then((result) => {
           if (cancelled) {
             return;
@@ -68,5 +69,5 @@ export function useOptimizePipeline() {
       cancelled = true;
       cancelIdle();
     };
-  }, [bytes, originalSize, pruneDedup, setStatus, setResult, setEstimate]);
+  }, [bytes, originalSize, pruneDedup, textureMaxSize, setStatus, setResult, setEstimate]);
 }
