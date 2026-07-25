@@ -1,24 +1,29 @@
 "use client";
 
-import { useModelStore } from "../store/modelStore";
-import { useThreeStage } from "./useThreeStage";
+import type { Ref } from "react";
 import { ViewerToolbar } from "./ViewerToolbar";
 import styles from "./Stage.module.scss";
 
-/** 3D preview of the uploaded glb, driven by the `useThreeStage` hook. */
-export function Stage() {
-  const bytes = useModelStore((state) => state.originalBytes);
-  const {
-    containerRef,
-    animations,
-    isPlaying,
-    selectedName,
-    onPointerDown,
-    onPointerUp,
-    togglePlay,
-    resetView,
-  } = useThreeStage(bytes);
+interface StageProps {
+  containerRef: Ref<HTMLDivElement>;
+  onPointerDown: (event: React.PointerEvent) => void;
+  onPointerUp: (event: React.PointerEvent) => void;
+  hasAnimation: boolean;
+  isPlaying: boolean;
+  onTogglePlay: () => void;
+  onResetView: () => void;
+}
 
+/** Presentational 3D canvas host. The stage is driven by `useThreeStage`. */
+export function Stage({
+  containerRef,
+  onPointerDown,
+  onPointerUp,
+  hasAnimation,
+  isPlaying,
+  onTogglePlay,
+  onResetView,
+}: StageProps) {
   return (
     <div className={styles.stage}>
       <div
@@ -27,12 +32,11 @@ export function Stage() {
         onPointerDown={onPointerDown}
         onPointerUp={onPointerUp}
       />
-      {selectedName && <span className={styles.selected}>選択中: {selectedName}</span>}
       <ViewerToolbar
-        hasAnimation={animations.length > 0}
+        hasAnimation={hasAnimation}
         isPlaying={isPlaying}
-        onTogglePlay={togglePlay}
-        onResetView={resetView}
+        onTogglePlay={onTogglePlay}
+        onResetView={onResetView}
       />
     </div>
   );

@@ -27,12 +27,9 @@ export function ModelSummaryCard() {
         <span className={styles.fileIcon}>
           <FileIcon size={14} />
         </span>
-        <div className={styles.fileName}>
-          <span className={styles.name} title={meta.name}>
-            {meta.name}
-          </span>
-          <span className={styles.copyright}>著作権情報：{meta.copyright ?? "なし"}</span>
-        </div>
+        <span className={styles.name} title={meta.name}>
+          {meta.name}
+        </span>
       </div>
 
       <div className={styles.dataArea}>
