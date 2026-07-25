@@ -29,6 +29,8 @@ export function useOptimizePipeline() {
   const textureMaxSize = useOptimizeStore((state) => state.settings.textureMaxSize);
   const reduceEnabled = useOptimizeStore((state) => state.settings.reduce.enabled);
   const reduceRatio = useOptimizeStore((state) => state.settings.reduce.ratio);
+  const deletedMaterials = useOptimizeStore((state) => state.settings.deletedMaterials);
+  const deletedTextureSlots = useOptimizeStore((state) => state.settings.deletedTextureSlots);
   const setStatus = useOptimizeStore((state) => state.setStatus);
   const setResult = useOptimizeStore((state) => state.setResult);
   const setEstimate = useOptimizeStore((state) => state.setEstimate);
@@ -46,6 +48,8 @@ export function useOptimizePipeline() {
         pruneDedup,
         textureMaxSize,
         reduce: { enabled: reduceEnabled, ratio: reduceRatio },
+        deletedMaterials,
+        deletedTextureSlots,
       })
         .then((result) => {
           if (cancelled) {
@@ -82,6 +86,8 @@ export function useOptimizePipeline() {
     textureMaxSize,
     reduceEnabled,
     reduceRatio,
+    deletedMaterials,
+    deletedTextureSlots,
     setStatus,
     setResult,
     setEstimate,

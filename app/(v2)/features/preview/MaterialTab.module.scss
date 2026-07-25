@@ -11,15 +11,8 @@
 .row {
   display: flex;
   align-items: center;
-  gap: var(--space-4);
   width: 100%;
-  padding: var(--space-4) var(--space-8);
-  border: none;
   border-radius: var(--radius-sm);
-  background: transparent;
-  font-family: inherit;
-  text-align: left;
-  cursor: pointer;
 
   &:hover {
     background: var(--color-highlight-soft);
@@ -28,6 +21,60 @@
 
 .rowActive {
   background: var(--color-highlight-soft);
+}
+
+.expand {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  flex: 1;
+  min-width: 0;
+  padding: var(--space-4) var(--space-8);
+  border: none;
+  background: transparent;
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  margin-right: var(--space-4);
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  cursor: pointer;
+
+  &:hover {
+    background: var(--color-highlight-soft);
+  }
+}
+
+.danger {
+  color: var(--color-text-faint);
+
+  &:hover {
+    color: var(--color-danger);
+  }
+}
+
+.restore {
+  color: var(--color-highlight);
+}
+
+.deleted {
+  opacity: 0.4;
+
+  .name,
+  .textureType,
+  .textureName {
+    text-decoration: line-through;
+  }
 }
 
 .headIcon {

@@ -1,8 +1,8 @@
 // Optimization Worker: runs the non-destructive @gltf-transform pipeline off the
 // main thread. gltf-transform is dynamically imported (kept out of the main
 // bundle). Input is a copy of the original bytes; output is fresh bytes.
-import type { Document } from "@gltf-transform/core";
-import type { PipelineRequest, PipelineResponse } from "./types";
+import type { Document, Material } from "@gltf-transform/core";
+import type { PipelineRequest, PipelineResponse, PipelineSettings } from "./types";
 
 const worker = self as unknown as Worker;
 const post = (message: PipelineResponse, transfer?: Transferable[]) =>
@@ -56,6 +56,55 @@ async function downscaleTextures(document: Document, maxSize: number): Promise<v
   }
 }
 
+/** Drop a single texture-map slot from a material. Labels match the preview UI
+ *  (`MAP_KEYS` in useThreeStage); Roughness/Metalness share the glTF
+ *  metallicRoughness texture, so either removes it. */
+function clearTextureSlot(material: Material, slot: string): void {
+  switch (slot) {
+    case "BaseColor":
+      material.setBaseColorTexture(null);
+      break;
+    case "Normal":
+      material.setNormalTexture(null);
+      break;
+    case "Roughness":
+    case "Metalness":
+      material.setMetallicRoughnessTexture(null);
+      break;
+    case "Emissive":
+      material.setEmissiveTexture(null);
+      break;
+    case "AO":
+      material.setOcclusionTexture(null);
+      break;
+  }
+}
+
+/**
+ * Apply the non-destructive slot/material deletions (F-10). Deleting a material
+ * detaches it from every primitive (meshes render blank, as in legacy); prune
+ * afterwards drops the now-orphaned materials/textures so the size shrinks.
+ * Returns true when anything was deleted (so the caller can prune even with the
+ * prune/dedup toggle off).
+ */
+function applyDeletions(document: Document, settings: PipelineSettings): boolean {
+  const { deletedMaterials, deletedTextureSlots } = settings;
+  if (deletedMaterials.length === 0 && deletedTextureSlots.length === 0) {
+    return false;
+  }
+  for (const material of document.getRoot().listMaterials()) {
+    const name = material.getName();
+    if (deletedMaterials.includes(name)) {
+      material.dispose();
+      continue;
+    }
+    for (const { slot } of deletedTextureSlots.filter((entry) => entry.material === name)) {
+      clearTextureSlot(material, slot);
+    }
+  }
+  return true;
+}
+
 /** Sum of triangles across all mesh primitives. */
 function countPolygons(document: Document): number {
   let triangles = 0;
@@ -86,8 +135,14 @@ worker.onmessage = async (event: MessageEvent<PipelineRequest>) => {
     const copyright = document.getRoot().getAsset().copyright;
 
     const before = propertyCount(document);
+    // Non-destructive material/texture-slot deletion (F-10). Prune afterwards to
+    // drop orphaned data — done even if prune/dedup is off, otherwise deletions
+    // would not shrink the file.
+    const hasDeletions = applyDeletions(document, settings);
     if (settings.pruneDedup) {
       await document.transform(functions.prune(), functions.dedup());
+    } else if (hasDeletions) {
+      await document.transform(functions.prune());
     }
     const after = propertyCount(document);
 
