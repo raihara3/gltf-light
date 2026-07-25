@@ -11,6 +11,10 @@ export interface OptimizeSettings {
   /** prune unused data + dedup (safe, applied by default). */
   pruneDedup: boolean;
   textureMaxSize: TextureMaxSize;
+  /** "個別で設定する": drive downscaling per texture instead of the global max. */
+  perTexture: boolean;
+  /** texture name → target max edge (px). Absence means "変更なし" (keep). */
+  textureOverrides: Record<string, number>;
   /** Polygon reduction — OFF by default; requires explicit user action. */
   reduce: {
     enabled: boolean;
@@ -38,6 +42,8 @@ export interface OptimizeResult {
 const DEFAULT_SETTINGS: OptimizeSettings = {
   pruneDedup: true,
   textureMaxSize: 1024, // recommended default
+  perTexture: false,
+  textureOverrides: {},
   reduce: { enabled: false, ratio: 0.5 },
 };
 
@@ -47,6 +53,8 @@ interface OptimizeState {
   estimate: OptimizeEstimate | null;
   result: OptimizeResult | null;
   setSettings: (patch: Partial<OptimizeSettings>) => void;
+  /** Set (or, with `null`, clear back to "変更なし") one texture's target edge. */
+  setTextureOverride: (name: string, target: number | null) => void;
   setStatus: (status: OptimizeStatus) => void;
   setEstimate: (estimate: OptimizeEstimate | null) => void;
   setResult: (result: OptimizeResult | null) => void;
@@ -63,6 +71,20 @@ export const useOptimizeStore = create<OptimizeState>()(
       result: null,
       setSettings: (patch) =>
         set((state) => ({ settings: { ...state.settings, ...patch } }), false, "setSettings"),
+      setTextureOverride: (name, target) =>
+        set(
+          (state) => {
+            const textureOverrides = { ...state.settings.textureOverrides };
+            if (target == null) {
+              delete textureOverrides[name];
+            } else {
+              textureOverrides[name] = target;
+            }
+            return { settings: { ...state.settings, textureOverrides } };
+          },
+          false,
+          "setTextureOverride"
+        ),
       setStatus: (status) => set({ status }, false, "setStatus"),
       setEstimate: (estimate) => set({ estimate }, false, "setEstimate"),
       setResult: (result) => set({ result }, false, "setResult"),

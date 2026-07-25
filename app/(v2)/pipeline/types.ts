@@ -9,6 +9,12 @@ export interface PipelineSettings {
   pruneDedup: boolean;
   /** Downscale every texture map to this max edge; `"off"` keeps them. */
   textureMaxSize: TextureMaxSize;
+  /** Per-texture overrides ("個別で設定する"). When on, `textureOverrides`
+   *  drives downscaling per texture (keyed by texture name) instead of the
+   *  global `textureMaxSize`. */
+  perTexture: boolean;
+  /** texture name → target max edge (px). Absence/keep means "変更なし". */
+  textureOverrides: Record<string, number>;
   /** Polygon reduction (meshoptimizer simplify) — OFF by default. */
   reduce: {
     enabled: boolean;

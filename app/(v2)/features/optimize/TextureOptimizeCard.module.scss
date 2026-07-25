@@ -6,6 +6,153 @@
   color: var(--color-highlight);
 }
 
+.individualToggle {
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+  padding: 0;
+  border: none;
+  background: transparent;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.check {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  border: 1.5px solid var(--color-text-faint);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  color: transparent;
+}
+
+.checkOn {
+  border-color: var(--color-highlight);
+  background: var(--color-highlight);
+  color: var(--color-on-accent);
+}
+
+.individualLabel {
+  font-size: var(--font-size-14);
+  line-height: 18px;
+  color: var(--color-text);
+}
+
+.textureList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-12);
+  width: 100%;
+}
+
+.textureRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+  width: 100%;
+}
+
+.thumb {
+  flex-shrink: 0;
+  width: 72px;
+  height: 72px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-bg);
+  object-fit: cover;
+}
+
+.textureMeta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+
+.textureType {
+  font-size: var(--font-size-11);
+  line-height: 14px;
+  color: var(--color-text-faint);
+}
+
+.textureName {
+  overflow: hidden;
+  font-weight: 600;
+  font-size: var(--font-size-14);
+  line-height: 18px;
+  color: var(--color-text);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.textureDim {
+  font-size: var(--font-size-11);
+  line-height: 14px;
+  color: var(--color-text-muted);
+}
+
+.textureSize {
+  font-size: var(--font-size-11);
+  line-height: 14px;
+  color: var(--color-text-muted);
+}
+
+.selectWrap {
+  position: relative;
+  flex-shrink: 0;
+}
+
+// Orange caret box on the right edge of the select (Figma).
+.selectWrap::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 26px;
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  background: var(--color-accent);
+  pointer-events: none;
+}
+
+.selectWrap::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  right: 9px;
+  width: 0;
+  height: 0;
+  transform: translateY(-50%);
+  border-top: 5px solid var(--color-on-accent);
+  border-right: 4px solid transparent;
+  border-left: 4px solid transparent;
+  pointer-events: none;
+}
+
+.select {
+  width: 128px;
+  padding: var(--space-8) var(--space-30) var(--space-8) var(--space-8);
+  border: 1px solid var(--color-border-2);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-family: inherit;
+  font-size: var(--font-size-14);
+  line-height: 18px;
+  appearance: none;
+  cursor: pointer;
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: default;
+  }
+}
+
 .chips {
   display: flex;
   gap: var(--space-8);
