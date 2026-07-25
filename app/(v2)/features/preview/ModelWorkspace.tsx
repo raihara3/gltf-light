@@ -1,11 +1,13 @@
 "use client";
 
 import { useModelStore } from "../../store/modelStore";
+import { useUiStore } from "../../store/uiStore";
 import { useThreeStage } from "../../viewer/useThreeStage";
 import { Stage } from "../../viewer/Stage";
 import { FileDropzone } from "../../components/FileDropzone";
 import { Copyright } from "../../components/Copyright";
 import { PreviewSidebar } from "./PreviewSidebar";
+import { OptimizeSidebar } from "../optimize/OptimizeSidebar";
 import styles from "../../styles/page.module.scss";
 
 /**
@@ -14,13 +16,20 @@ import styles from "../../styles/page.module.scss";
  */
 export function ModelWorkspace() {
   const bytes = useModelStore((state) => state.originalBytes);
+  const mode = useUiStore((state) => state.mode);
   const stage = useThreeStage(bytes);
 
   return (
     <>
       <aside className={styles.sidebar}>
-        <FileDropzone />
-        <PreviewSidebar stage={stage} />
+        {mode === "optimize" ? (
+          <OptimizeSidebar />
+        ) : (
+          <>
+            <FileDropzone />
+            <PreviewSidebar stage={stage} />
+          </>
+        )}
       </aside>
       <section className={styles.viewer} aria-label="3Dビュー">
         <Stage
