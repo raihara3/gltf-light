@@ -23,7 +23,6 @@ export function BeforeAfterSummary() {
   const status = useOptimizeStore((state) => state.status);
   const estimate = useOptimizeStore((state) => state.estimate);
   const resultBytes = useOptimizeStore((state) => state.result?.bytes);
-  const reset = useOptimizeStore((state) => state.reset);
 
   const ready = status === "ready" && estimate != null;
 
@@ -61,9 +60,6 @@ export function BeforeAfterSummary() {
       </div>
 
       <div className={styles.actions}>
-        <button type="button" className={styles.reset} onClick={reset}>
-          リセット
-        </button>
         <button type="button" className={styles.save} onClick={handleSave} disabled={!ready || !resultBytes}>
           <DownloadIcon size={16} />
           軽量化して保存
