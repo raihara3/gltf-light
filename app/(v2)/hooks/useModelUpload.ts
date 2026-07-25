@@ -1,5 +1,6 @@
 import { useCallback, useState } from "react";
 import { useModelStore } from "../store/modelStore";
+import { useUiStore } from "../store/uiStore";
 
 const GLB_EXTENSION = ".glb";
 
@@ -10,6 +11,7 @@ const GLB_EXTENSION = ".glb";
  */
 export function useModelUpload() {
   const loadModel = useModelStore((state) => state.loadModel);
+  const setMode = useUiStore((state) => state.setMode);
   const [error, setError] = useState<string | null>(null);
 
   const acceptFiles = useCallback(
@@ -25,8 +27,11 @@ export function useModelUpload() {
       setError(null);
       const originalBytes = await file.arrayBuffer();
       loadModel(originalBytes, { name: file.name, size: file.size });
+      // Always land a freshly uploaded model in preview, even if the persisted
+      // mode was "optimize" from a previous session.
+      setMode("preview");
     },
-    [loadModel]
+    [loadModel, setMode]
   );
 
   return { acceptFiles, error };
