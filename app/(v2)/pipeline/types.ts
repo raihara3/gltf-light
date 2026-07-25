@@ -15,6 +15,8 @@ export interface PipelineSettings {
   perTexture: boolean;
   /** texture name → target max edge (px). Absence/keep means "変更なし". */
   textureOverrides: Record<string, number>;
+  /** Textures (by name) to drop — non-destructive; reset/undo restores them. */
+  deletedTextures: string[];
   /** Polygon reduction (meshoptimizer simplify) — OFF by default. */
   reduce: {
     enabled: boolean;

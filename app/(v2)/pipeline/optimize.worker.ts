@@ -71,6 +71,26 @@ async function downscaleTextures(
   }
 }
 
+/**
+ * Drop textures marked for deletion (F-10, by name). Disposing a texture
+ * detaches it from every material slot that referenced it; prune afterwards
+ * removes the now-orphaned image so the file actually shrinks. Returns true when
+ * anything was deleted.
+ */
+function deleteTextures(document: Document, names: string[]): boolean {
+  if (names.length === 0) {
+    return false;
+  }
+  let deleted = false;
+  for (const texture of document.getRoot().listTextures()) {
+    if (names.includes(texture.getName())) {
+      texture.dispose();
+      deleted = true;
+    }
+  }
+  return deleted;
+}
+
 /** Sum of triangles across all mesh primitives. */
 function countPolygons(document: Document): number {
   let triangles = 0;
@@ -101,8 +121,14 @@ worker.onmessage = async (event: MessageEvent<PipelineRequest>) => {
     const copyright = document.getRoot().getAsset().copyright;
 
     const before = propertyCount(document);
+    // Non-destructive texture deletion. Prune afterwards to drop the orphaned
+    // images — done even if prune/dedup is off, otherwise deletions would not
+    // shrink the file.
+    const hasDeletions = deleteTextures(document, settings.deletedTextures);
     if (settings.pruneDedup) {
       await document.transform(functions.prune(), functions.dedup());
+    } else if (hasDeletions) {
+      await document.transform(functions.prune());
     }
     const after = propertyCount(document);
 

@@ -6,7 +6,7 @@ import { useOptimizeStore } from "../../store/optimizeStore";
 import { useThreeStage } from "../../viewer/useThreeStage";
 import { Switch } from "../../components/ui/Switch";
 import { formatFileSize } from "../../lib/formatFileSize";
-import { ImageIcon, CheckIcon } from "../../icons";
+import { ImageIcon, CheckIcon, TrashIcon, RotateIcon } from "../../icons";
 import card from "./OptimizeCard.module.scss";
 import styles from "./TextureOptimizeCard.module.scss";
 
@@ -55,16 +55,18 @@ function collectTextures(stage: StageController): TextureRow[] {
   return Array.from(seen.values());
 }
 
-/** Per-texture resolution dropdown (変更なし + valid downscales). */
+/** Per-texture row: resolution dropdown + a non-destructive delete toggle. */
 function TextureRowItem({ texture }: { texture: TextureRow }) {
   const override = useOptimizeStore((state) => state.settings.textureOverrides[texture.name]);
   const setTextureOverride = useOptimizeStore((state) => state.setTextureOverride);
+  const deleted = useOptimizeStore((state) => state.settings.deletedTextures.includes(texture.name));
+  const toggleTextureDeleted = useOptimizeStore((state) => state.toggleTextureDeleted);
 
   const longest = Math.max(texture.width, texture.height);
   const choices = RESOLUTIONS.filter((resolution) => resolution < longest);
 
   return (
-    <div className={styles.textureRow}>
+    <div className={`${styles.textureRow} ${deleted ? styles.deleted : ""}`}>
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img className={styles.thumb} src={texture.url} alt={texture.type} />
       <div className={styles.textureMeta}>
@@ -77,26 +79,37 @@ function TextureRowItem({ texture }: { texture: TextureRow }) {
           <span className={styles.textureSize}>{formatFileSize(texture.byteLength)}</span>
         )}
       </div>
-      <div className={styles.selectWrap}>
-        <select
-          className={styles.select}
-          aria-label={`${texture.name} の解像度`}
-          value={override ?? "keep"}
-          onChange={(event) =>
-            setTextureOverride(
-              texture.name,
-              event.target.value === "keep" ? null : Number(event.target.value)
-            )
-          }
-          disabled={choices.length === 0}
+      <div className={styles.rowControls}>
+        <button
+          type="button"
+          className={`${styles.action} ${deleted ? styles.restore : styles.danger}`}
+          aria-label={deleted ? `${texture.name} を戻す` : `${texture.name} を削除`}
+          aria-pressed={deleted}
+          onClick={() => toggleTextureDeleted(texture.name)}
         >
-          <option value="keep">変更なし</option>
-          {choices.map((resolution) => (
-            <option key={resolution} value={resolution}>
-              {resolution === RECOMMENDED ? `${resolution}（おすすめ）` : resolution}
-            </option>
-          ))}
-        </select>
+          {deleted ? <RotateIcon size={14} /> : <TrashIcon size={14} />}
+        </button>
+        <div className={styles.selectWrap}>
+          <select
+            className={styles.select}
+            aria-label={`${texture.name} の解像度`}
+            value={override ?? "keep"}
+            onChange={(event) =>
+              setTextureOverride(
+                texture.name,
+                event.target.value === "keep" ? null : Number(event.target.value)
+              )
+            }
+            disabled={deleted || choices.length === 0}
+          >
+            <option value="keep">変更なし</option>
+            {choices.map((resolution) => (
+              <option key={resolution} value={resolution}>
+                {resolution === RECOMMENDED ? `${resolution}（おすすめ）` : resolution}
+              </option>
+            ))}
+          </select>
+        </div>
       </div>
     </div>
   );

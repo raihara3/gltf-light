@@ -15,6 +15,8 @@ export interface OptimizeSettings {
   perTexture: boolean;
   /** texture name → target max edge (px). Absence means "変更なし" (keep). */
   textureOverrides: Record<string, number>;
+  /** Textures (by name) marked for deletion — non-destructive/undoable. */
+  deletedTextures: string[];
   /** Polygon reduction — OFF by default; requires explicit user action. */
   reduce: {
     enabled: boolean;
@@ -44,6 +46,7 @@ const DEFAULT_SETTINGS: OptimizeSettings = {
   textureMaxSize: 1024, // recommended default
   perTexture: false,
   textureOverrides: {},
+  deletedTextures: [],
   reduce: { enabled: false, ratio: 0.5 },
 };
 
@@ -55,6 +58,8 @@ interface OptimizeState {
   setSettings: (patch: Partial<OptimizeSettings>) => void;
   /** Set (or, with `null`, clear back to "変更なし") one texture's target edge. */
   setTextureOverride: (name: string, target: number | null) => void;
+  /** Toggle a texture's deletion (non-destructive, undoable). */
+  toggleTextureDeleted: (name: string) => void;
   setStatus: (status: OptimizeStatus) => void;
   setEstimate: (estimate: OptimizeEstimate | null) => void;
   setResult: (result: OptimizeResult | null) => void;
@@ -84,6 +89,18 @@ export const useOptimizeStore = create<OptimizeState>()(
           },
           false,
           "setTextureOverride"
+        ),
+      toggleTextureDeleted: (name) =>
+        set(
+          (state) => {
+            const list = state.settings.deletedTextures;
+            const deletedTextures = list.includes(name)
+              ? list.filter((entry) => entry !== name)
+              : [...list, name];
+            return { settings: { ...state.settings, deletedTextures } };
+          },
+          false,
+          "toggleTextureDeleted"
         ),
       setStatus: (status) => set({ status }, false, "setStatus"),
       setEstimate: (estimate) => set({ estimate }, false, "setEstimate"),

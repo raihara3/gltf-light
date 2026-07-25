@@ -29,6 +29,7 @@ export function useOptimizePipeline() {
   const textureMaxSize = useOptimizeStore((state) => state.settings.textureMaxSize);
   const perTexture = useOptimizeStore((state) => state.settings.perTexture);
   const textureOverrides = useOptimizeStore((state) => state.settings.textureOverrides);
+  const deletedTextures = useOptimizeStore((state) => state.settings.deletedTextures);
   const reduceEnabled = useOptimizeStore((state) => state.settings.reduce.enabled);
   const reduceRatio = useOptimizeStore((state) => state.settings.reduce.ratio);
   const setStatus = useOptimizeStore((state) => state.setStatus);
@@ -49,6 +50,7 @@ export function useOptimizePipeline() {
         textureMaxSize,
         perTexture,
         textureOverrides,
+        deletedTextures,
         reduce: { enabled: reduceEnabled, ratio: reduceRatio },
       })
         .then((result) => {
@@ -86,6 +88,7 @@ export function useOptimizePipeline() {
     textureMaxSize,
     perTexture,
     textureOverrides,
+    deletedTextures,
     reduceEnabled,
     reduceRatio,
     setStatus,
