@@ -30,10 +30,11 @@ Do not start an issue until the previous one is accepted, unless the user explic
 
 ## Per-issue flow
 
-1. **Implement**: satisfy the acceptance criteria written in the issue. Follow `~/.ai-organization/workspace/gltf-light/architecture.md` for design decisions. New (v2) code never imports legacy code, and is written entirely in TypeScript.
+1. **Implement**: satisfy the acceptance criteria written in the issue. Follow `~/.ai-organization/workspace/gltf-light/architecture.md` for design decisions. New (v2) code never imports legacy code, and is written entirely in TypeScript. Work on a branch `feature/v2-issue-<N>` cut from `feature/v2`.
 2. **Verify (QA)**: run the app and verify every acceptance criterion in a real browser (Playwright MCP). Record evidence (screenshots) for visual criteria.
-3. **PM review**: check the result against the issue and `PRD.md` (requirement fit), then report to the user with the verification results.
-4. **User acceptance**: the user gives final approval. Only then close the issue and move to the next one.
+3. **Open PR**: once implementation and QA both pass, push the branch and open a PR **targeting `feature/v2`** (never `develop`/`main`). The PR MUST link its issue with a closing keyword in the body (`Closes #<N>`). Include a summary of changes and the QA result. If a `PULL_REQUEST_TEMPLATE.md` exists, follow it.
+4. **PM review**: check the result against the issue and `PRD.md` (requirement fit), then report to the user with the verification results and the PR link.
+5. **User acceptance**: the user gives final approval. Only then merge the PR (which auto-closes the linked issue) and move to the next one.
 
 ## Fixed project decisions (do not re-litigate)
 
