@@ -1,8 +1,10 @@
 "use client";
 
+import type { StageController } from "../../viewer/useThreeStage";
 import { useOptimizePipeline } from "./useOptimizePipeline";
 import { PruneDedupCard } from "./PruneDedupCard";
 import { TextureOptimizeCard } from "./TextureOptimizeCard";
+import { PolygonReduceCard } from "./PolygonReduceCard";
 import { BeforeAfterSummary } from "./BeforeAfterSummary";
 import styles from "./OptimizeSidebar.module.scss";
 
@@ -11,7 +13,7 @@ import styles from "./OptimizeSidebar.module.scss";
  * container + the prune/dedup section wired to the Worker pipeline. Texture /
  * polygon sections and the save bar arrive in #35 / #36 / #37.
  */
-export function OptimizeSidebar() {
+export function OptimizeSidebar({ stage }: { stage: StageController }) {
   useOptimizePipeline();
 
   return (
@@ -19,6 +21,7 @@ export function OptimizeSidebar() {
       <h2 className={styles.heading}>軽量化の設定はカスタマイズが可能です</h2>
       <PruneDedupCard />
       <TextureOptimizeCard />
+      <PolygonReduceCard stage={stage} />
       <BeforeAfterSummary />
     </div>
   );
