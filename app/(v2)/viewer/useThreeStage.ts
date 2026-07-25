@@ -200,6 +200,7 @@ export function useThreeStage(bytes: ArrayBuffer | null) {
   const [selectedUuid, setSelectedUuid] = useState<string | null>(null);
   const [pickingEnabled, setPickingEnabled] = useState(true);
   const pickingEnabledRef = useRef(true);
+  const [hasSkin, setHasSkin] = useState(false);
 
   // Keep refs in sync so the render loop can gate the mixer without re-running.
   useEffect(() => {
@@ -372,7 +373,14 @@ export function useThreeStage(bytes: ArrayBuffer | null) {
 
         // Index objects for tree ↔ viewer selection.
         stage.objectsByUuid = new Map();
-        model.traverse((object) => stage.objectsByUuid.set(object.uuid, object));
+        let skinned = false;
+        model.traverse((object) => {
+          stage.objectsByUuid.set(object.uuid, object);
+          if ((object as THREE.SkinnedMesh).isSkinnedMesh) {
+            skinned = true;
+          }
+        });
+        setHasSkin(skinned);
 
         // Extract serializable model data for the preview UI.
         stage.materials = new Map();
@@ -534,6 +542,23 @@ export function useThreeStage(bytes: ArrayBuffer | null) {
     []
   );
 
+  const setWireframe = useCallback((enabled: boolean) => {
+    const stage = refs.current;
+    if (!stage?.model) {
+      return;
+    }
+    stage.model.traverse((object) => {
+      const mesh = object as THREE.Mesh;
+      if (!mesh.isMesh) {
+        return;
+      }
+      const materials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
+      materials.forEach((material) => {
+        (material as THREE.MeshStandardMaterial).wireframe = enabled;
+      });
+    });
+  }, []);
+
   const resetView = useCallback(() => {
     const stage = refs.current;
     if (!stage || !stage.model) {
@@ -569,6 +594,8 @@ export function useThreeStage(bytes: ArrayBuffer | null) {
     selectMesh,
     pickingEnabled,
     setPickingEnabled,
+    hasSkin,
+    setWireframe,
     resetView,
   };
 }

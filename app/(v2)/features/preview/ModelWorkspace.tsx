@@ -23,7 +23,7 @@ export function ModelWorkspace() {
     <>
       <aside className={styles.sidebar}>
         {mode === "optimize" ? (
-          <OptimizeSidebar />
+          <OptimizeSidebar stage={stage} />
         ) : (
           <>
             <FileDropzone />

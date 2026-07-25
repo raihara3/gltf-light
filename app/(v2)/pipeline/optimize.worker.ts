@@ -91,6 +91,21 @@ worker.onmessage = async (event: MessageEvent<PipelineRequest>) => {
     }
     const after = propertyCount(document);
 
+    // Polygon reduction (meshoptimizer simplify) — only when explicitly enabled.
+    if (settings.reduce.enabled) {
+      const meshopt = await import("meshoptimizer");
+      await meshopt.MeshoptSimplifier.ready;
+      await document.transform(
+        functions.simplify({
+          simplifier: meshopt.MeshoptSimplifier,
+          ratio: settings.reduce.ratio,
+          // Looser error tolerance so the slider ratio can actually be reached
+          // (a tight bound stops simplification early on dense/skinned meshes).
+          error: 0.05,
+        })
+      );
+    }
+
     // Downscale all texture maps to the chosen max edge via OffscreenCanvas
     // (the #30 fallback — reliable in-browser, keeps the original encoding so a
     // JPEG stays a JPEG with no PNG bloat). Only textures larger than the box

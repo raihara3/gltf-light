@@ -9,6 +9,12 @@ export interface PipelineSettings {
   pruneDedup: boolean;
   /** Downscale every texture map to this max edge; `"off"` keeps them. */
   textureMaxSize: TextureMaxSize;
+  /** Polygon reduction (meshoptimizer simplify) — OFF by default. */
+  reduce: {
+    enabled: boolean;
+    /** Target ratio of triangles to keep (0–1). */
+    ratio: number;
+  };
 }
 
 export interface PipelineStats {
