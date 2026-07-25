@@ -175,15 +175,17 @@ interface StageRefs {
 }
 
 /**
- * Owns the three.js stage and renders a glb passed as bytes. Plain three.js
- * behind a thin hook — three objects live in refs (never in React state / the
- * store). Exposes serializable model data (polygons, materials, mesh tree,
- * animations) and imperative controls for the preview UI to drive.
+ * Owns the three.js stage and renders a glb. `displayBytes` is what gets
+ * rendered (the original, or an optimized result for the "check the result"
+ * reflection); `sourceBytes` identifies the original so preview data + camera
+ * fit stay tied to it. Plain three.js behind a thin hook — three objects live
+ * in refs (never in React state / the store).
  */
-export function useThreeStage(bytes: ArrayBuffer | null) {
+export function useThreeStage(displayBytes: ArrayBuffer | null, sourceBytes: ArrayBuffer | null) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const refs = useRef<StageRefs | null>(null);
   const clockRef = useRef(new THREE.Clock());
+  const loadedSourceRef = useRef<ArrayBuffer | null>(null);
   const raycasterRef = useRef(new THREE.Raycaster());
   const pointerDownRef = useRef<{ x: number; y: number } | null>(null);
   const isPlayingRef = useRef(false);
@@ -343,16 +345,16 @@ export function useThreeStage(bytes: ArrayBuffer | null) {
     };
   }, []);
 
-  // ── Load / replace the model when bytes change ───────────────────────────
+  // ── Load / replace the model when the displayed bytes change ─────────────
   useEffect(() => {
     const current = refs.current;
-    if (!current || !bytes) {
+    if (!current || !displayBytes) {
       return;
     }
     let cancelled = false;
     const loader = new GLTFLoader();
     loader.parse(
-      bytes.slice(0),
+      displayBytes.slice(0),
       "",
       (gltf) => {
         if (cancelled || !refs.current) {
@@ -373,46 +375,58 @@ export function useThreeStage(bytes: ArrayBuffer | null) {
 
         // Index objects for tree ↔ viewer selection.
         stage.objectsByUuid = new Map();
-        let skinned = false;
-        model.traverse((object) => {
-          stage.objectsByUuid.set(object.uuid, object);
-          if ((object as THREE.SkinnedMesh).isSkinnedMesh) {
-            skinned = true;
-          }
-        });
-        setHasSkin(skinned);
+        model.traverse((object) => stage.objectsByUuid.set(object.uuid, object));
 
-        // Extract serializable model data for the preview UI.
-        stage.materials = new Map();
-        const materialInfos = collectMaterials(model, stage.materials, parseGlbTextureSizes(bytes));
-        const maxTextureSize = materialInfos.reduce(
-          (max, material) =>
-            material.textures.reduce((inner, texture) => Math.max(inner, texture.width, texture.height), max),
-          0
-        );
-        const existingMeta = useModelStore.getState().meta;
-        setMeta({
-          ...(existingMeta ?? { name: "", size: bytes.byteLength }),
-          polygons: countTriangles(model),
-          maxTextureSize: maxTextureSize || undefined,
-        });
-        setMaterials(materialInfos);
-        setMeshTree(buildMeshTree(model));
+        // Extract preview data only from the source (original) model — never
+        // from an optimized reflection, so modelStore.meta keeps the "before"
+        // numbers and selection uuids match what preview mode renders.
+        if (displayBytes === sourceBytes) {
+          let skinned = false;
+          model.traverse((object) => {
+            if ((object as THREE.SkinnedMesh).isSkinnedMesh) {
+              skinned = true;
+            }
+          });
+          setHasSkin(skinned);
+          stage.materials = new Map();
+          const materialInfos = collectMaterials(
+            model,
+            stage.materials,
+            parseGlbTextureSizes(displayBytes)
+          );
+          const maxTextureSize = materialInfos.reduce(
+            (max, material) =>
+              material.textures.reduce((inner, texture) => Math.max(inner, texture.width, texture.height), max),
+            0
+          );
+          const existingMeta = useModelStore.getState().meta;
+          setMeta({
+            ...(existingMeta ?? { name: "", size: displayBytes.byteLength }),
+            polygons: countTriangles(model),
+            maxTextureSize: maxTextureSize || undefined,
+          });
+          setMaterials(materialInfos);
+          setMeshTree(buildMeshTree(model));
+        }
 
-        // Fit camera to the model bounds.
-        const box = new THREE.Box3().setFromObject(model);
-        const center = box.getCenter(new THREE.Vector3());
-        const size = box.getSize(new THREE.Vector3());
-        const maxDim = Math.max(size.x, size.y, size.z) || 1;
-        const fov = stage.camera.fov * (Math.PI / 180);
-        const distance = (Math.abs(maxDim / 2 / Math.tan(fov / 2)) || 1) * 1.5;
-        stage.camera.position.set(0, center.y, distance);
-        stage.camera.near = distance / 100;
-        stage.camera.far = distance * 100;
-        stage.camera.updateProjectionMatrix();
-        stage.camera.lookAt(center);
-        stage.controls.target.copy(center);
-        stage.controls.update();
+        // Fit the camera only for a freshly uploaded model — reflections and
+        // mode switches keep the current camera.
+        if (sourceBytes !== loadedSourceRef.current) {
+          loadedSourceRef.current = sourceBytes;
+          const box = new THREE.Box3().setFromObject(model);
+          const center = box.getCenter(new THREE.Vector3());
+          const size = box.getSize(new THREE.Vector3());
+          const maxDim = Math.max(size.x, size.y, size.z) || 1;
+          const fov = stage.camera.fov * (Math.PI / 180);
+          const distance = (Math.abs(maxDim / 2 / Math.tan(fov / 2)) || 1) * 1.5;
+          stage.camera.position.set(0, center.y, distance);
+          stage.camera.near = distance / 100;
+          stage.camera.far = distance * 100;
+          stage.camera.updateProjectionMatrix();
+          stage.camera.lookAt(center);
+          stage.controls.target.copy(center);
+          stage.controls.update();
+        }
 
         // Animation.
         stage.actions.clear();
@@ -447,7 +461,7 @@ export function useThreeStage(bytes: ArrayBuffer | null) {
     return () => {
       cancelled = true;
     };
-  }, [bytes, setMeta]);
+  }, [displayBytes, sourceBytes, setMeta]);
 
   // ── Picking (click, not drag) ────────────────────────────────────────────
   const handlePointerDown = useCallback((event: React.PointerEvent) => {
