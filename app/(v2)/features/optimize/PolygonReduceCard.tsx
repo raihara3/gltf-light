@@ -5,7 +5,7 @@ import type { StageController } from "../../viewer/useThreeStage";
 import { useModelStore } from "../../store/modelStore";
 import { useOptimizeStore } from "../../store/optimizeStore";
 import { Switch } from "../../components/ui/Switch";
-import { LayersIcon, CheckIcon, AlertIcon } from "../../icons";
+import { LayersIcon, CheckIcon } from "../../icons";
 import card from "./OptimizeCard.module.scss";
 import styles from "./PolygonReduceCard.module.scss";
 
@@ -51,12 +51,7 @@ export function PolygonReduceCard({ stage }: { stage: StageController }) {
         <Switch checked={enabled} onChange={toggleEnabled} label="ポリゴンの削減" />
       </div>
       <p className={card.text}>面の数を減らして軽くします（既定はオフ）。</p>
-      <p className={`${styles.warning} ${stage.hasSkin ? styles.warningStrong : ""}`}>
-        {stage.hasSkin && <AlertIcon size={12} />}
-        {stage.hasSkin
-          ? "スキン／アニメーション付きモデルは形が崩れやすいためご注意ください"
-          : "※形やアニメーションが崩れる場合があります"}
-      </p>
+      <p className={styles.warning}>※形やアニメーションが崩れる場合があります</p>
 
       {enabled && (
         <>
