@@ -18,10 +18,10 @@ export interface OptimizeSettings {
   };
 }
 
-/** F-17 auto-estimation result (placeholder → numbers). */
+/** F-17 auto-estimation result. `null` in the store means "not estimated yet". */
 export interface OptimizeEstimate {
-  afterBytes?: number;
-  deltaPct?: number;
+  afterBytes: number;
+  deltaPct: number;
 }
 
 /** Result of a transform run. `bytes` are new — the original is never touched. */

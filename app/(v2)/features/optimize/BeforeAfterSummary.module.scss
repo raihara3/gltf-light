@@ -1,0 +1,56 @@
+.bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  bottom: calc(-1 * var(--space-20));
+  // Push to the bottom, and break out of the sidebar's 20px padding so the bar
+  // spans the full width and sits flush with the sidebar edges.
+  margin: auto calc(-1 * var(--space-20)) calc(-1 * var(--space-20));
+  padding: var(--space-12);
+  border-top: 1px solid var(--color-border);
+  background: var(--color-surface);
+}
+
+.size {
+  display: flex;
+  flex-direction: column;
+}
+
+.delta {
+  font-weight: 600;
+  font-size: var(--font-size-16);
+  line-height: 20px;
+  color: var(--color-accent);
+}
+
+.sizes {
+  font-size: var(--font-size-14);
+  line-height: 18px;
+  color: var(--color-text);
+  white-space: nowrap;
+}
+
+.placeholder {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-8);
+  font-size: var(--font-size-14);
+  line-height: 18px;
+  color: var(--color-text-muted);
+}
+
+.spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid var(--color-border-2);
+  border-top-color: var(--color-accent);
+  border-radius: var(--radius-pill);
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
