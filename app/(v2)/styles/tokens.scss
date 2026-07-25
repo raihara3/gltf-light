@@ -6,6 +6,7 @@
   // Brand / accent (role-stable across themes)
   --color-accent: #ff5b1d; // Figma color/orange — active tab, section icons, CTA
   --color-accent-strong: #ed4f14; // hover / pressed
+  --color-accent-soft: #ffece4; // tinted accent surface (selected chip)
   --color-on-accent: #ffffff; // text/icon on an accent fill
   --color-highlight: #2f6bff; // Figma color/blue-8 — upload icon, notes, focus
   --color-highlight-soft: #eaf0ff; // Figma color/blue-2 — selected row background
@@ -57,6 +58,7 @@
 [data-app="v2"][data-theme="dark"] {
   --color-accent: #ff7a52;
   --color-accent-strong: #ff6a3d;
+  --color-accent-soft: #3a2a22;
   --color-highlight: #6f9bff;
 
   --color-bg: #1b1a18;

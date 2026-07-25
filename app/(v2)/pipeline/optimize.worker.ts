@@ -21,6 +21,41 @@ function propertyCount(document: Document): number {
   );
 }
 
+/** Downscale every texture whose longest edge exceeds `maxSize`, in place. */
+async function downscaleTextures(document: Document, maxSize: number): Promise<void> {
+  for (const texture of document.getRoot().listTextures()) {
+    const image = texture.getImage();
+    const size = texture.getSize();
+    const mimeType = texture.getMimeType() || "image/png";
+    if (!image || !size) {
+      continue;
+    }
+    const [width, height] = size;
+    const longest = Math.max(width, height);
+    if (longest <= maxSize) {
+      continue;
+    }
+    const scale = maxSize / longest;
+    const targetWidth = Math.max(1, Math.round(width * scale));
+    const targetHeight = Math.max(1, Math.round(height * scale));
+
+    const bitmap = await createImageBitmap(new Blob([image as BlobPart], { type: mimeType }));
+    const canvas = new OffscreenCanvas(targetWidth, targetHeight);
+    const context = canvas.getContext("2d");
+    if (!context) {
+      bitmap.close();
+      continue;
+    }
+    context.drawImage(bitmap, 0, 0, targetWidth, targetHeight);
+    bitmap.close();
+
+    const blob = await canvas.convertToBlob(
+      mimeType === "image/jpeg" ? { type: "image/jpeg", quality: 0.85 } : { type: mimeType }
+    );
+    texture.setImage(new Uint8Array(await blob.arrayBuffer()));
+  }
+}
+
 /** Sum of triangles across all mesh primitives. */
 function countPolygons(document: Document): number {
   let triangles = 0;
@@ -55,6 +90,14 @@ worker.onmessage = async (event: MessageEvent<PipelineRequest>) => {
       await document.transform(functions.prune(), functions.dedup());
     }
     const after = propertyCount(document);
+
+    // Downscale all texture maps to the chosen max edge via OffscreenCanvas
+    // (the #30 fallback — reliable in-browser, keeps the original encoding so a
+    // JPEG stays a JPEG with no PNG bloat). Only textures larger than the box
+    // are touched.
+    if (typeof settings.textureMaxSize === "number") {
+      await downscaleTextures(document, settings.textureMaxSize);
+    }
 
     if (copyright) {
       document.getRoot().getAsset().copyright = copyright;

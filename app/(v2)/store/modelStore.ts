@@ -13,6 +13,8 @@ export interface ModelMeta {
   readonly copyright?: string;
   readonly polygons?: number;
   readonly textures?: readonly ModelTextureMeta[];
+  /** Largest texture edge (px) in the original model. */
+  readonly maxTextureSize?: number;
 }
 
 export interface ModelTextureMeta {

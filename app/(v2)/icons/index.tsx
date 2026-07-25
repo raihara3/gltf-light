@@ -71,6 +71,9 @@ export const FilmIcon = (props: IconProps) => (
 export const LayersIcon = (props: IconProps) => (
   <Icon {...props}><path d="M12 2 2 7l10 5 10-5z" /><path d="M2 17l10 5 10-5" /><path d="M2 12l10 5 10-5" /></Icon>
 );
+export const ImageIcon = (props: IconProps) => (
+  <Icon {...props}><rect x="3" y="3" width="18" height="18" rx="2" /><circle cx="8.5" cy="8.5" r="1.5" /><path d="M21 15l-5-5L5 21" /></Icon>
+);
 export const MemoIcon = (props: IconProps) => (
   <Icon {...props}><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><path d="M14 2v6h6" /><path d="M8 13h8" /><path d="M8 17h5" /></Icon>
 );

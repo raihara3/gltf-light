@@ -375,13 +375,20 @@ export function useThreeStage(bytes: ArrayBuffer | null) {
         model.traverse((object) => stage.objectsByUuid.set(object.uuid, object));
 
         // Extract serializable model data for the preview UI.
+        stage.materials = new Map();
+        const materialInfos = collectMaterials(model, stage.materials, parseGlbTextureSizes(bytes));
+        const maxTextureSize = materialInfos.reduce(
+          (max, material) =>
+            material.textures.reduce((inner, texture) => Math.max(inner, texture.width, texture.height), max),
+          0
+        );
         const existingMeta = useModelStore.getState().meta;
         setMeta({
           ...(existingMeta ?? { name: "", size: bytes.byteLength }),
           polygons: countTriangles(model),
+          maxTextureSize: maxTextureSize || undefined,
         });
-        stage.materials = new Map();
-        setMaterials(collectMaterials(model, stage.materials, parseGlbTextureSizes(bytes)));
+        setMaterials(materialInfos);
         setMeshTree(buildMeshTree(model));
 
         // Fit camera to the model bounds.
