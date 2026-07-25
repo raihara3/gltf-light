@@ -30,6 +30,8 @@ export interface OptimizeResult {
   stats?: {
     afterBytes: number;
     polygons?: number;
+    textures?: number;
+    unusedRemoved?: number;
   };
 }
 
