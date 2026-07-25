@@ -2,6 +2,7 @@
 
 import { useOptimizePipeline } from "./useOptimizePipeline";
 import { PruneDedupCard } from "./PruneDedupCard";
+import { BeforeAfterSummary } from "./BeforeAfterSummary";
 import styles from "./OptimizeSidebar.module.scss";
 
 /**
@@ -16,6 +17,7 @@ export function OptimizeSidebar() {
     <div className={styles.sidebar}>
       <h2 className={styles.heading}>軽量化の設定はカスタマイズが可能です</h2>
       <PruneDedupCard />
+      <BeforeAfterSummary />
     </div>
   );
 }
