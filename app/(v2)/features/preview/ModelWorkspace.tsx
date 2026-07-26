@@ -7,6 +7,7 @@ import { useThreeStage } from "../../viewer/useThreeStage";
 import { Stage } from "../../viewer/Stage";
 import { FileDropzone } from "../../components/FileDropzone";
 import { Copyright } from "../../components/Copyright";
+import { LegacyLink } from "../../components/LegacyLink";
 import { PreviewSidebar } from "./PreviewSidebar";
 import { OptimizeSidebar } from "../optimize/OptimizeSidebar";
 import styles from "../../styles/page.module.scss";
@@ -33,6 +34,9 @@ export function ModelWorkspace() {
           <>
             <FileDropzone />
             <PreviewSidebar stage={stage} />
+            {/* Optimize mode's bottom is the save CTA; keep the discreet legacy
+                link to preview/empty so it never competes with the main flow. */}
+            <LegacyLink />
           </>
         )}
       </aside>

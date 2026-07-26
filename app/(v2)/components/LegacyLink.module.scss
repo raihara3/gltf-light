@@ -1,0 +1,15 @@
+.link {
+  align-self: flex-start;
+  // Push the link to the bottom of the sidebar column, below every card.
+  margin-top: auto;
+  padding-top: var(--space-8);
+  color: var(--color-text-faint);
+  font-size: var(--font-size-11);
+  line-height: 14px;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+
+  &:hover {
+    color: var(--color-accent);
+  }
+}

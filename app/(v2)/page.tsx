@@ -5,6 +5,7 @@ import { Header } from "./components/Header";
 import { ServiceInfo } from "./components/ServiceInfo";
 import { FileDropzone } from "./components/FileDropzone";
 import { Copyright } from "./components/Copyright";
+import { LegacyLink } from "./components/LegacyLink";
 import { ModelWorkspace } from "./features/preview/ModelWorkspace";
 import styles from "./styles/page.module.scss";
 
@@ -25,6 +26,7 @@ export default function V2Page() {
           <>
             <aside className={styles.sidebar}>
               <ServiceInfo />
+              <LegacyLink />
             </aside>
             <section className={styles.viewer} aria-label="3Dビュー">
               <div className={styles.viewerBody}>
