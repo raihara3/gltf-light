@@ -6,6 +6,8 @@ import { useOptimizeStore } from "../../store/optimizeStore";
 import { useThreeStage } from "../../viewer/useThreeStage";
 import { Switch } from "../../components/ui/Switch";
 import { formatFileSize } from "../../lib/formatFileSize";
+import { useTranslations } from "../../i18n/useTranslations";
+import type { MessageKey } from "../../i18n/ja";
 import { ImageIcon, CheckIcon, TrashIcon, RotateIcon } from "../../icons";
 import card from "./OptimizeCard.module.scss";
 import styles from "./TextureOptimizeCard.module.scss";
@@ -14,10 +16,10 @@ type StageController = ReturnType<typeof useThreeStage>;
 
 type Resolution = 512 | 1024 | 2048;
 
-const OPTIONS: { value: Resolution; sub: string }[] = [
-  { value: 512, sub: "最軽量" },
-  { value: 1024, sub: "おすすめ" },
-  { value: 2048, sub: "高品質" },
+const OPTIONS: { value: Resolution; subKey: MessageKey }[] = [
+  { value: 512, subKey: "texture.chip.min" },
+  { value: 1024, subKey: "texture.chip.recommended" },
+  { value: 2048, subKey: "texture.chip.high" },
 ];
 
 /** Resolution offered per-texture (only downscales below the current edge). */
@@ -61,6 +63,7 @@ function TextureRowItem({ texture }: { texture: TextureRow }) {
   const setTextureOverride = useOptimizeStore((state) => state.setTextureOverride);
   const deleted = useOptimizeStore((state) => state.settings.deletedTextures.includes(texture.name));
   const toggleTextureDeleted = useOptimizeStore((state) => state.toggleTextureDeleted);
+  const t = useTranslations();
 
   const longest = Math.max(texture.width, texture.height);
   const choices = RESOLUTIONS.filter((resolution) => resolution < longest);
@@ -83,7 +86,11 @@ function TextureRowItem({ texture }: { texture: TextureRow }) {
         <button
           type="button"
           className={`${styles.action} ${deleted ? styles.restore : styles.danger}`}
-          aria-label={deleted ? `${texture.name} を戻す` : `${texture.name} を削除`}
+          aria-label={
+            deleted
+              ? t("texture.restore", { name: texture.name })
+              : t("texture.delete", { name: texture.name })
+          }
           aria-pressed={deleted}
           onClick={() => toggleTextureDeleted(texture.name)}
         >
@@ -92,7 +99,7 @@ function TextureRowItem({ texture }: { texture: TextureRow }) {
         <div className={styles.selectWrap}>
           <select
             className={styles.select}
-            aria-label={`${texture.name} の解像度`}
+            aria-label={t("texture.resolutionOf", { name: texture.name })}
             value={override ?? "keep"}
             onChange={(event) =>
               setTextureOverride(
@@ -102,10 +109,12 @@ function TextureRowItem({ texture }: { texture: TextureRow }) {
             }
             disabled={deleted || choices.length === 0}
           >
-            <option value="keep">変更なし</option>
+            <option value="keep">{t("texture.keep")}</option>
             {choices.map((resolution) => (
               <option key={resolution} value={resolution}>
-                {resolution === RECOMMENDED ? `${resolution}（おすすめ）` : resolution}
+                {resolution === RECOMMENDED
+                  ? t("texture.recommendedOption", { resolution })
+                  : resolution}
               </option>
             ))}
           </select>
@@ -121,6 +130,7 @@ export function TextureOptimizeCard({ stage }: { stage: StageController }) {
   const textureMaxSize = useOptimizeStore((state) => state.settings.textureMaxSize);
   const perTexture = useOptimizeStore((state) => state.settings.perTexture);
   const setSettings = useOptimizeStore((state) => state.setSettings);
+  const t = useTranslations();
 
   const textures = useMemo(() => collectTextures(stage), [stage.materials]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -158,18 +168,18 @@ export function TextureOptimizeCard({ stage }: { stage: StageController }) {
         <span className={card.icon}>
           <ImageIcon size={14} />
         </span>
-        <span className={card.label}>テクスチャの最適化</span>
-        <Switch checked={enabled} onChange={toggle} label="テクスチャの最適化" />
+        <span className={card.label}>{t("texture.label")}</span>
+        <Switch checked={enabled} onChange={toggle} label={t("texture.label")} />
       </div>
-      <p className={card.text}>最大解像度を選ぶだけで、すべての画像をまとめて縮小します。</p>
-      <p className={styles.note}>※指定解像度を超えるもののみ調整します</p>
+      <p className={card.text}>{t("texture.text")}</p>
+      <p className={styles.note}>{t("texture.note")}</p>
 
       {enabled && (
         <>
           {maxTextureSize != null && (
             <div className={card.dataArea}>
               <div className={card.data}>
-                <span className={card.dataLabel}>現在の最大解像度</span>
+                <span className={card.dataLabel}>{t("texture.currentMax")}</span>
                 <span className={card.dataValue}>{maxTextureSize.toLocaleString()}</span>
               </div>
             </div>
@@ -186,7 +196,7 @@ export function TextureOptimizeCard({ stage }: { stage: StageController }) {
               <span className={`${styles.check} ${perTexture ? styles.checkOn : ""}`}>
                 {perTexture && <CheckIcon size={10} />}
               </span>
-              <span className={styles.individualLabel}>個別で設定する</span>
+              <span className={styles.individualLabel}>{t("texture.individual")}</span>
             </button>
           )}
 
@@ -197,8 +207,8 @@ export function TextureOptimizeCard({ stage }: { stage: StageController }) {
               ))}
             </div>
           ) : (
-            <div className={styles.chips} role="group" aria-label="最大解像度">
-              {OPTIONS.map(({ value, sub }) => (
+            <div className={styles.chips} role="group" aria-label={t("texture.maxResolution")}>
+              {OPTIONS.map(({ value, subKey }) => (
                 <button
                   key={value}
                   type="button"
@@ -207,7 +217,7 @@ export function TextureOptimizeCard({ stage }: { stage: StageController }) {
                   onClick={() => selectResolution(value)}
                 >
                   <span className={styles.chipValue}>{value}</span>
-                  <span className={styles.chipSub}>{sub}</span>
+                  <span className={styles.chipSub}>{t(subKey)}</span>
                 </button>
               ))}
             </div>

@@ -1,48 +1,53 @@
+"use client";
+
 import { EyeIcon, FileIcon, ZapIcon, type IconProps } from "../icons";
+import { useTranslations } from "../i18n/useTranslations";
+import type { MessageKey } from "../i18n/ja";
 import styles from "./ServiceInfo.module.scss";
 
 type InfoCard = {
   Icon: (props: IconProps) => React.ReactElement;
-  title: string;
-  body: string;
-  note?: string;
+  titleKey: MessageKey;
+  bodyKey: MessageKey;
+  noteKey?: MessageKey;
 };
 
 const CARDS: InfoCard[] = [
   {
     Icon: EyeIcon,
-    title: "3Dモデルのプレビュー",
-    body: "専用アプリがなくても3Dモデルをアップロードするだけで表示確認ができます。",
-    note: "※サーバーにアップロードすることはありません",
+    titleKey: "service.preview.title",
+    bodyKey: "service.preview.body",
+    noteKey: "common.noUpload",
   },
   {
     Icon: FileIcon,
-    title: "アニメーションや詳細情報の確認",
-    body: "3Dモデルに含まれるアニメーションの再生や、マテリアルや使用テクスチャ、メッシュ構造の確認も可能です。",
+    titleKey: "service.info.title",
+    bodyKey: "service.info.body",
   },
   {
     Icon: ZapIcon,
-    title: "最適化の提案とワンクリックでの反映",
-    body: "3Dモデルをウェブで扱う上での最適化をご提案、ワンクリックで反映いただけます。ご自身での調整も可能です。",
+    titleKey: "service.optimize.title",
+    bodyKey: "service.optimize.body",
   },
 ];
 
 /** Sidebar content for the empty (no model loaded) state. */
 export function ServiceInfo() {
+  const t = useTranslations();
   return (
     <>
-      <h2 className={styles.heading}>このサービスでできること</h2>
-      {CARDS.map(({ Icon, title, body, note }) => (
-        <article key={title} className={styles.card}>
+      <h2 className={styles.heading}>{t("service.heading")}</h2>
+      {CARDS.map(({ Icon, titleKey, bodyKey, noteKey }) => (
+        <article key={titleKey} className={styles.card}>
           <div className={styles.sectionTitle}>
             <span className={styles.sectionIcon}>
               <Icon size={14} />
             </span>
-            <span className={styles.sectionLabel}>{title}</span>
+            <span className={styles.sectionLabel}>{t(titleKey)}</span>
           </div>
           <div className={styles.text}>
-            <p className={styles.body}>{body}</p>
-            {note && <p className={styles.note}>{note}</p>}
+            <p className={styles.body}>{t(bodyKey)}</p>
+            {noteKey && <p className={styles.note}>{t(noteKey)}</p>}
           </div>
         </article>
       ))}

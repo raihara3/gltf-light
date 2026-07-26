@@ -7,12 +7,18 @@ export type Mode = "preview" | "optimize";
 /** Color theme. Light is the default per the approved design. */
 export type Theme = "light" | "dark";
 
+/** UI language. `ja` is the default; detected from the browser on first visit. */
+export type Locale = "ja" | "en";
+
 interface UiState {
   mode: Mode;
   theme: Theme;
+  locale: Locale;
   setMode: (mode: Mode) => void;
   toggleTheme: () => void;
   setTheme: (theme: Theme) => void;
+  setLocale: (locale: Locale) => void;
+  toggleLocale: () => void;
 }
 
 /**
@@ -26,9 +32,12 @@ export const useUiStore = create<UiState>()(
     (set) => ({
       mode: "preview",
       theme: "light",
+      locale: "ja",
       setMode: (mode) => set({ mode }),
       toggleTheme: () => set((state) => ({ theme: state.theme === "light" ? "dark" : "light" })),
       setTheme: (theme) => set({ theme }),
+      setLocale: (locale) => set({ locale }),
+      toggleLocale: () => set((state) => ({ locale: state.locale === "ja" ? "en" : "ja" })),
     }),
     {
       name: "gltf-light-v2-ui",

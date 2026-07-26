@@ -2,6 +2,7 @@
 
 import { useRef, useState } from "react";
 import { useModelUpload } from "../hooks/useModelUpload";
+import { useTranslations } from "../i18n/useTranslations";
 import { UploadIcon } from "../icons";
 import styles from "./FileDropzone.module.scss";
 
@@ -13,6 +14,7 @@ interface FileDropzoneProps {
 /** Upload dropzone: click or drag & drop a `.glb` into modelStore. */
 export function FileDropzone({ variant = "panel" }: FileDropzoneProps) {
   const { acceptFiles, error } = useModelUpload();
+  const t = useTranslations();
   const inputRef = useRef<HTMLInputElement>(null);
   const [isDragging, setIsDragging] = useState(false);
 
@@ -49,9 +51,9 @@ export function FileDropzone({ variant = "panel" }: FileDropzoneProps) {
           <UploadIcon size={24} />
         </span>
         <span className={styles.text}>
-          <span className={styles.title}>3Dモデルをアップロード</span>
-          <span className={styles.hint}>ドラッグ&amp;ドロップ、またはクリック（.glb）</span>
-          <span className={styles.note}>※サーバーにアップロードすることはありません</span>
+          <span className={styles.title}>{t("dropzone.title")}</span>
+          <span className={styles.hint}>{t("dropzone.hint")}</span>
+          <span className={styles.note}>{t("common.noUpload")}</span>
         </span>
       </button>
       {error && (

@@ -4,6 +4,7 @@ import { useModelStore } from "../store/modelStore";
 import { useUiStore } from "../store/uiStore";
 import { formatFileSize } from "../lib/formatFileSize";
 import { analytics } from "../lib/analytics";
+import { useTranslations } from "../i18n/useTranslations";
 import { FileIcon, ZapIcon, ArrowRightIcon } from "../icons";
 import styles from "./ModelSummaryCard.module.scss";
 
@@ -17,6 +18,7 @@ const POLYGON_PLACEHOLDER = "—"; // filled once the glb is parsed (issue 0-6 /
 export function ModelSummaryCard() {
   const meta = useModelStore((state) => state.meta);
   const setMode = useUiStore((state) => state.setMode);
+  const t = useTranslations();
 
   if (!meta) {
     return null;
@@ -35,11 +37,11 @@ export function ModelSummaryCard() {
 
       <div className={styles.dataArea}>
         <div className={styles.data}>
-          <span className={styles.dataLabel}>サイズ</span>
+          <span className={styles.dataLabel}>{t("model.size")}</span>
           <span className={styles.dataValue}>{formatFileSize(meta.size)}</span>
         </div>
         <div className={styles.data}>
-          <span className={styles.dataLabel}>ポリゴン数</span>
+          <span className={styles.dataLabel}>{t("common.polygons")}</span>
           <span className={styles.dataValue}>
             {meta.polygons != null ? meta.polygons.toLocaleString() : POLYGON_PLACEHOLDER}
           </span>
@@ -55,7 +57,7 @@ export function ModelSummaryCard() {
         }}
       >
         <ZapIcon size={16} />
-        <span className={styles.ctaLabel}>モデルの軽量化をする</span>
+        <span className={styles.ctaLabel}>{t("model.optimizeCta")}</span>
         <ArrowRightIcon size={16} />
       </button>
     </div>

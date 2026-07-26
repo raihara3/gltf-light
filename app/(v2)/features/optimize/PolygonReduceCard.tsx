@@ -5,6 +5,7 @@ import type { StageController } from "../../viewer/useThreeStage";
 import { useModelStore } from "../../store/modelStore";
 import { useOptimizeStore } from "../../store/optimizeStore";
 import { Switch } from "../../components/ui/Switch";
+import { useTranslations } from "../../i18n/useTranslations";
 import { LayersIcon, CheckIcon } from "../../icons";
 import card from "./OptimizeCard.module.scss";
 import styles from "./PolygonReduceCard.module.scss";
@@ -18,6 +19,7 @@ export function PolygonReduceCard({ stage }: { stage: StageController }) {
   const setSettings = useOptimizeStore((state) => state.setSettings);
   const resultPolygons = useOptimizeStore((state) => state.result?.stats?.polygons);
   const [wireframe, setWireframe] = useState(false);
+  const t = useTranslations();
 
   const enabled = reduce.enabled;
   const reductionPct = Math.round((1 - reduce.ratio) * 100);
@@ -47,17 +49,17 @@ export function PolygonReduceCard({ stage }: { stage: StageController }) {
         <span className={card.icon}>
           <LayersIcon size={14} />
         </span>
-        <span className={card.label}>ポリゴンの削減</span>
-        <Switch checked={enabled} onChange={toggleEnabled} label="ポリゴンの削減" />
+        <span className={card.label}>{t("polygon.label")}</span>
+        <Switch checked={enabled} onChange={toggleEnabled} label={t("polygon.label")} />
       </div>
-      <p className={card.text}>面の数を減らして軽くします（既定はオフ）。</p>
-      <p className={styles.warning}>※形やアニメーションが崩れる場合があります</p>
+      <p className={card.text}>{t("polygon.text")}</p>
+      <p className={styles.warning}>{t("polygon.warning")}</p>
 
       {enabled && (
         <>
           <div className={styles.slider}>
             <span className={styles.sliderHead}>
-              <span>削減率</span>
+              <span>{t("polygon.reductionRate")}</span>
               <span className={styles.value}>{reductionPct}%</span>
             </span>
             <div className={styles.bar}>
@@ -71,7 +73,7 @@ export function PolygonReduceCard({ stage }: { stage: StageController }) {
                 step={5}
                 value={reductionPct}
                 onChange={(event) => setReduction(Number(event.target.value))}
-                aria-label="削減率"
+                aria-label={t("polygon.reductionRate")}
               />
             </div>
           </div>
@@ -85,12 +87,12 @@ export function PolygonReduceCard({ stage }: { stage: StageController }) {
             <span className={`${styles.check} ${wireframe ? styles.checkOn : ""}`} aria-hidden="true">
               {wireframe && <CheckIcon size={9} />}
             </span>
-            <span className={styles.wireframeLabel}>ワイヤーフレームで確認</span>
+            <span className={styles.wireframeLabel}>{t("polygon.wireframe")}</span>
           </button>
 
           <div className={card.dataArea}>
             <div className={card.data}>
-              <span className={card.dataLabel}>ポリゴン数</span>
+              <span className={card.dataLabel}>{t("common.polygons")}</span>
               <span className={card.dataValue}>
                 {(resultPolygons ?? originalPolygons ?? 0).toLocaleString()}
               </span>

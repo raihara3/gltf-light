@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import type { StageController } from "./useThreeStage";
+import { useTranslations } from "../i18n/useTranslations";
 import { CameraIcon, CheckIcon } from "../icons";
 import styles from "./CapturePanel.module.scss";
 
@@ -78,6 +79,7 @@ function Check({
 export function CapturePanel({ stage }: { stage: StageController }) {
   const [open, setOpen] = useState(false);
   const [transparent, setTransparent] = useState(false);
+  const t = useTranslations();
 
   return (
     <div className={styles.root}>
@@ -88,17 +90,17 @@ export function CapturePanel({ stage }: { stage: StageController }) {
         onClick={() => setOpen((previous) => !previous)}
       >
         <CameraIcon size={16} />
-        <span className={styles.triggerLabel}>キャプチャ</span>
+        <span className={styles.triggerLabel}>{t("capture.button")}</span>
       </button>
 
       {open && (
-        <div className={styles.panel} role="dialog" aria-label="キャプチャ設定">
-          <p className={styles.heading}>キャプチャ</p>
+        <div className={styles.panel} role="dialog" aria-label={t("capture.dialogLabel")}>
+          <p className={styles.heading}>{t("capture.button")}</p>
 
           <div className={styles.group}>
-            <span className={styles.groupLabel}>ライト</span>
+            <span className={styles.groupLabel}>{t("capture.light")}</span>
             <Slider
-              label="環境光"
+              label={t("capture.ambient")}
               min={0}
               max={3}
               step={0.05}
@@ -106,7 +108,7 @@ export function CapturePanel({ stage }: { stage: StageController }) {
               onChange={stage.setAmbientIntensity}
             />
             <Slider
-              label="直接光"
+              label={t("capture.directional")}
               min={0}
               max={3}
               step={0.05}
@@ -116,10 +118,14 @@ export function CapturePanel({ stage }: { stage: StageController }) {
           </div>
 
           <div className={styles.group}>
-            <Check label="影をつける" checked={stage.shadowEnabled} onChange={stage.setShadowEnabled} />
+            <Check
+              label={t("capture.shadow")}
+              checked={stage.shadowEnabled}
+              onChange={stage.setShadowEnabled}
+            />
             {stage.shadowEnabled && (
               <Slider
-                label="影の濃さ"
+                label={t("capture.shadowOpacity")}
                 min={0}
                 max={1}
                 step={0.05}
@@ -130,12 +136,16 @@ export function CapturePanel({ stage }: { stage: StageController }) {
           </div>
 
           <div className={styles.group}>
-            <Check label="背景を透過する" checked={transparent} onChange={setTransparent} />
+            <Check
+              label={t("capture.transparent")}
+              checked={transparent}
+              onChange={setTransparent}
+            />
           </div>
 
           <button type="button" className={styles.capture} onClick={() => stage.capture({ transparent })}>
             <CameraIcon size={16} />
-            キャプチャして保存
+            {t("capture.save")}
           </button>
         </div>
       )}

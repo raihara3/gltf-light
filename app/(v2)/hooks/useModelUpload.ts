@@ -1,6 +1,7 @@
 import { useCallback, useState } from "react";
 import { useModelStore } from "../store/modelStore";
 import { useUiStore } from "../store/uiStore";
+import { useTranslations } from "../i18n/useTranslations";
 import { analytics } from "../lib/analytics";
 
 const GLB_EXTENSION = ".glb";
@@ -13,6 +14,7 @@ const GLB_EXTENSION = ".glb";
 export function useModelUpload() {
   const loadModel = useModelStore((state) => state.loadModel);
   const setMode = useUiStore((state) => state.setMode);
+  const t = useTranslations();
   const [error, setError] = useState<string | null>(null);
 
   const acceptFiles = useCallback(
@@ -22,7 +24,7 @@ export function useModelUpload() {
         return;
       }
       if (!file.name.toLowerCase().endsWith(GLB_EXTENSION)) {
-        setError(".glb ファイルのみ対応しています");
+        setError(t("upload.error.glbOnly"));
         return;
       }
       setError(null);
@@ -33,7 +35,7 @@ export function useModelUpload() {
       // mode was "optimize" from a previous session.
       setMode("preview");
     },
-    [loadModel, setMode]
+    [loadModel, setMode, t]
   );
 
   return { acceptFiles, error };

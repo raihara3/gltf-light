@@ -4,6 +4,7 @@ import { useModelStore } from "../../store/modelStore";
 import { useOptimizeStore } from "../../store/optimizeStore";
 import { formatFileSize } from "../../lib/formatFileSize";
 import { analytics } from "../../lib/analytics";
+import { useTranslations } from "../../i18n/useTranslations";
 import { DownloadIcon } from "../../icons";
 
 const bytesToMb = (bytes: number) => +(bytes / 1024 / 1024).toFixed(2);
@@ -27,6 +28,7 @@ export function BeforeAfterSummary() {
   const estimate = useOptimizeStore((state) => state.estimate);
   const resultBytes = useOptimizeStore((state) => state.result?.bytes);
   const settings = useOptimizeStore((state) => state.settings);
+  const t = useTranslations();
 
   const ready = status === "ready" && estimate != null;
 
@@ -70,7 +72,7 @@ export function BeforeAfterSummary() {
         ) : (
           <span className={styles.placeholder}>
             <span className={styles.spinner} aria-hidden="true" />
-            計算中…
+            {t("summary.calculating")}
           </span>
         )}
       </div>
@@ -78,7 +80,7 @@ export function BeforeAfterSummary() {
       <div className={styles.actions}>
         <button type="button" className={styles.save} onClick={handleSave} disabled={!ready || !resultBytes}>
           <DownloadIcon size={16} />
-          軽量化して保存
+          {t("summary.save")}
         </button>
       </div>
     </div>

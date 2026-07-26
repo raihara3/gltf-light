@@ -2,6 +2,7 @@
 
 import type { StageController } from "../../viewer/useThreeStage";
 import { FilmIcon, PlayIcon, PauseIcon, CheckIcon } from "../../icons";
+import { useTranslations } from "../../i18n/useTranslations";
 import { TabCard } from "./TabCard";
 import styles from "./AnimationTab.module.scss";
 
@@ -13,12 +14,13 @@ function formatClip(duration: number): string {
 
 /** 動き: animation clip list (toggle which play) + player (play/pause + seek). */
 export function AnimationTab({ stage }: { stage: StageController }) {
+  const t = useTranslations();
   const { animations, activeClips, isPlaying, currentTime, duration, togglePlay, toggleClip, seek } = stage;
   const clampedTime = duration > 0 ? Math.min(currentTime % duration || 0, duration) : 0;
   const progress = duration > 0 ? (clampedTime / duration) * 100 : 0;
 
   return (
-    <TabCard Icon={FilmIcon} title="アニメーション">
+    <TabCard Icon={FilmIcon} title={t("tabs.animation")}>
       <ul className={styles.list}>
         {animations.map((clip) => {
           const checked = activeClips.includes(clip.name);
@@ -46,7 +48,7 @@ export function AnimationTab({ stage }: { stage: StageController }) {
           type="button"
           className={styles.playButton}
           onClick={togglePlay}
-          aria-label={isPlaying ? "停止" : "再生"}
+          aria-label={isPlaying ? t("animation.pause") : t("animation.play")}
         >
           {isPlaying ? <PauseIcon size={13} /> : <PlayIcon size={13} />}
         </button>
@@ -64,7 +66,7 @@ export function AnimationTab({ stage }: { stage: StageController }) {
               step={0.01}
               value={clampedTime}
               onChange={(event) => seek(Number(event.target.value))}
-              aria-label="再生位置"
+              aria-label={t("animation.seek")}
             />
           </div>
           <span className={styles.timeLabel}>

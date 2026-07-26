@@ -4,6 +4,7 @@ import { useModelStore } from "../../store/modelStore";
 import { useUiStore } from "../../store/uiStore";
 import { useOptimizeStore } from "../../store/optimizeStore";
 import { useViewerDrop } from "../../hooks/useViewerDrop";
+import { useTranslations } from "../../i18n/useTranslations";
 import { useThreeStage } from "../../viewer/useThreeStage";
 import { Stage } from "../../viewer/Stage";
 import { CapturePanel } from "../../viewer/CapturePanel";
@@ -27,6 +28,7 @@ export function ModelWorkspace() {
   const displayBytes = mode === "optimize" && resultBytes ? resultBytes : bytes;
   const stage = useThreeStage(displayBytes, bytes);
   const { isDragging, dropProps } = useViewerDrop();
+  const t = useTranslations();
 
   return (
     <>
@@ -43,7 +45,7 @@ export function ModelWorkspace() {
           </>
         )}
       </aside>
-      <section className={styles.viewer} aria-label="3Dビュー" {...dropProps}>
+      <section className={styles.viewer} aria-label={t("viewer.label")} {...dropProps}>
         <Stage
           containerRef={stage.containerRef}
           onPointerDown={stage.onPointerDown}
@@ -55,7 +57,7 @@ export function ModelWorkspace() {
         />
         <Copyright />
         {mode === "preview" && <CapturePanel stage={stage} />}
-        {isDragging && <div className={styles.dropOverlay}>ここに .glb をドロップして差し替え</div>}
+        {isDragging && <div className={styles.dropOverlay}>{t("viewer.dropReplace")}</div>}
       </section>
     </>
   );
