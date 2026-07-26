@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useUiStore, type Mode } from "../store/uiStore";
 import {
   RocketIcon,
@@ -67,9 +66,6 @@ export function Header() {
         </button>
         <span className={styles.meta}>
           <span className={styles.version}>v2.0</span>
-          <Link className={styles.legacyLink} href="/legacy">
-            Previous version
-          </Link>
         </span>
       </div>
     </header>
