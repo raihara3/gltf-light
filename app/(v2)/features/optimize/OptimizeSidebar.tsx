@@ -20,7 +20,7 @@ export function OptimizeSidebar({ stage }: { stage: StageController }) {
     <div className={styles.sidebar}>
       <h2 className={styles.heading}>軽量化の設定はカスタマイズが可能です</h2>
       <PruneDedupCard />
-      <TextureOptimizeCard />
+      <TextureOptimizeCard stage={stage} />
       <PolygonReduceCard stage={stage} />
       <BeforeAfterSummary />
     </div>

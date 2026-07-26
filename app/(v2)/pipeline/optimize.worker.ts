@@ -2,7 +2,7 @@
 // main thread. gltf-transform is dynamically imported (kept out of the main
 // bundle). Input is a copy of the original bytes; output is fresh bytes.
 import type { Document } from "@gltf-transform/core";
-import type { PipelineRequest, PipelineResponse } from "./types";
+import type { PipelineRequest, PipelineResponse, PipelineSettings } from "./types";
 
 const worker = self as unknown as Worker;
 const post = (message: PipelineResponse, transfer?: Transferable[]) =>
@@ -21,9 +21,24 @@ function propertyCount(document: Document): number {
   );
 }
 
-/** Downscale every texture whose longest edge exceeds `maxSize`, in place. */
-async function downscaleTextures(document: Document, maxSize: number): Promise<void> {
+/**
+ * Downscale textures whose longest edge exceeds a max, in place. In per-texture
+ * mode (`overrides` set) each texture uses its own target (keyed by name; absent
+ * = keep); otherwise every texture uses the global `maxSize`.
+ */
+async function downscaleTextures(
+  document: Document,
+  settings: Pick<PipelineSettings, "textureMaxSize" | "perTexture" | "textureOverrides">
+): Promise<void> {
   for (const texture of document.getRoot().listTextures()) {
+    const maxSize = settings.perTexture
+      ? settings.textureOverrides[texture.getName()]
+      : typeof settings.textureMaxSize === "number"
+        ? settings.textureMaxSize
+        : undefined;
+    if (typeof maxSize !== "number") {
+      continue; // 変更なし / texture optimization off
+    }
     const image = texture.getImage();
     const size = texture.getSize();
     const mimeType = texture.getMimeType() || "image/png";
@@ -56,6 +71,26 @@ async function downscaleTextures(document: Document, maxSize: number): Promise<v
   }
 }
 
+/**
+ * Drop textures marked for deletion (F-10, by name). Disposing a texture
+ * detaches it from every material slot that referenced it; prune afterwards
+ * removes the now-orphaned image so the file actually shrinks. Returns true when
+ * anything was deleted.
+ */
+function deleteTextures(document: Document, names: string[]): boolean {
+  if (names.length === 0) {
+    return false;
+  }
+  let deleted = false;
+  for (const texture of document.getRoot().listTextures()) {
+    if (names.includes(texture.getName())) {
+      texture.dispose();
+      deleted = true;
+    }
+  }
+  return deleted;
+}
+
 /** Sum of triangles across all mesh primitives. */
 function countPolygons(document: Document): number {
   let triangles = 0;
@@ -86,8 +121,14 @@ worker.onmessage = async (event: MessageEvent<PipelineRequest>) => {
     const copyright = document.getRoot().getAsset().copyright;
 
     const before = propertyCount(document);
+    // Non-destructive texture deletion. Prune afterwards to drop the orphaned
+    // images — done even if prune/dedup is off, otherwise deletions would not
+    // shrink the file.
+    const hasDeletions = deleteTextures(document, settings.deletedTextures);
     if (settings.pruneDedup) {
       await document.transform(functions.prune(), functions.dedup());
+    } else if (hasDeletions) {
+      await document.transform(functions.prune());
     }
     const after = propertyCount(document);
 
@@ -106,12 +147,12 @@ worker.onmessage = async (event: MessageEvent<PipelineRequest>) => {
       );
     }
 
-    // Downscale all texture maps to the chosen max edge via OffscreenCanvas
-    // (the #30 fallback — reliable in-browser, keeps the original encoding so a
-    // JPEG stays a JPEG with no PNG bloat). Only textures larger than the box
-    // are touched.
-    if (typeof settings.textureMaxSize === "number") {
-      await downscaleTextures(document, settings.textureMaxSize);
+    // Downscale texture maps via OffscreenCanvas (the #30 fallback — reliable
+    // in-browser, keeps the original encoding so a JPEG stays a JPEG with no PNG
+    // bloat). Only textures larger than their target are touched. Runs for both
+    // the global max and per-texture ("個別で設定する") modes.
+    if (settings.perTexture || typeof settings.textureMaxSize === "number") {
+      await downscaleTextures(document, settings);
     }
 
     if (copyright) {

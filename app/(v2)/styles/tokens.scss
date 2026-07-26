@@ -10,6 +10,7 @@
   --color-on-accent: #ffffff; // text/icon on an accent fill
   --color-highlight: #2f6bff; // Figma color/blue-8 — upload icon, notes, focus
   --color-highlight-soft: #eaf0ff; // Figma color/blue-2 — selected row background
+  --color-danger: #e5484d; // destructive action (texture delete)
 
   // Surface & text ramp (light)
   --color-bg: #f7f5f2; // Figma color/biege-3
@@ -60,6 +61,7 @@
   --color-accent-strong: #ff6a3d;
   --color-accent-soft: #3a2a22;
   --color-highlight: #6f9bff;
+  --color-danger: #f2555a;
 
   --color-bg: #1b1a18;
   --color-viewer-bg: #1b1a18; // dark: unchanged (matches the app background)
