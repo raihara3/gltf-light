@@ -2,6 +2,7 @@
 
 import { useModelStore } from "../store/modelStore";
 import { useUiStore, type Mode } from "../store/uiStore";
+import { analytics } from "../lib/analytics";
 import {
   RocketIcon,
   EyeIcon,
@@ -49,7 +50,12 @@ export function Header() {
                   role="tab"
                   aria-selected={isActive}
                   className={`${styles.modeTab} ${isActive ? styles.modeTabActive : ""}`}
-                  onClick={() => setMode(value)}
+                  onClick={() => {
+                    if (value === "optimize") {
+                      analytics.optimizeTabOpen();
+                    }
+                    setMode(value);
+                  }}
                 >
                   <Icon size={14} />
                   {label}

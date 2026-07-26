@@ -3,6 +3,7 @@
 import { useModelStore } from "../store/modelStore";
 import { useUiStore } from "../store/uiStore";
 import { formatFileSize } from "../lib/formatFileSize";
+import { analytics } from "../lib/analytics";
 import { FileIcon, ZapIcon, ArrowRightIcon } from "../icons";
 import styles from "./ModelSummaryCard.module.scss";
 
@@ -45,7 +46,14 @@ export function ModelSummaryCard() {
         </div>
       </div>
 
-      <button type="button" className={styles.cta} onClick={() => setMode("optimize")}>
+      <button
+        type="button"
+        className={styles.cta}
+        onClick={() => {
+          analytics.optimizeCtaClick("preview_summary");
+          setMode("optimize");
+        }}
+      >
         <ZapIcon size={16} />
         <span className={styles.ctaLabel}>モデルの軽量化をする</span>
         <ArrowRightIcon size={16} />

@@ -4,6 +4,7 @@ import { useState } from "react";
 import type { StageController } from "../../viewer/useThreeStage";
 import { useUiStore } from "../../store/uiStore";
 import { formatFileSize } from "../../lib/formatFileSize";
+import { analytics } from "../../lib/analytics";
 import { SphereIcon, ZapIcon, ArrowRightIcon } from "../../icons";
 import { TabCard } from "./TabCard";
 import styles from "./MaterialTab.module.scss";
@@ -94,7 +95,14 @@ export function MaterialTab({ stage }: { stage: StageController }) {
         })}
       </ul>
 
-      <button type="button" className={styles.cta} onClick={() => setMode("optimize")}>
+      <button
+        type="button"
+        className={styles.cta}
+        onClick={() => {
+          analytics.optimizeCtaClick("material_tab");
+          setMode("optimize");
+        }}
+      >
         <ZapIcon size={16} />
         <span className={styles.ctaLabel}>マテリアルの最適化をする</span>
         <ArrowRightIcon size={16} />

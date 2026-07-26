@@ -1,6 +1,7 @@
 import { useCallback, useState } from "react";
 import { useModelStore } from "../store/modelStore";
 import { useUiStore } from "../store/uiStore";
+import { analytics } from "../lib/analytics";
 
 const GLB_EXTENSION = ".glb";
 
@@ -15,7 +16,7 @@ export function useModelUpload() {
   const [error, setError] = useState<string | null>(null);
 
   const acceptFiles = useCallback(
-    async (files: FileList | File[] | null) => {
+    async (files: FileList | File[] | null, source: "click" | "drop" = "click") => {
       const file = files && files[0];
       if (!file) {
         return;
@@ -27,6 +28,7 @@ export function useModelUpload() {
       setError(null);
       const originalBytes = await file.arrayBuffer();
       loadModel(originalBytes, { name: file.name, size: file.size });
+      analytics.modelUpload(source, +(file.size / 1024 / 1024).toFixed(2));
       // Always land a freshly uploaded model in preview, even if the persisted
       // mode was "optimize" from a previous session.
       setMode("preview");
