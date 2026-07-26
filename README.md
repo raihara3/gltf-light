@@ -1,51 +1,92 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# gltf-light
+
+Browser-based tool to **preview and optimize `.glb` 3D models** — fully
+client-side. Models are never uploaded to a server; all parsing, optimization,
+and capture happen in the browser.
+
+The app ships in two versions that live side by side in a single Next.js build:
+
+| Route | Version | Notes |
+| --- | --- | --- |
+| `/` | **v2** (current) | Preview + non-destructive optimization, JA/EN UI, light/dark theme |
+| `/legacy` | legacy (frozen) | The previous version, kept as-is; no new features |
+
+## Features (v2)
+
+**Preview**
+- 3D viewer (plain three.js) with orbit controls and reset view
+- Animation playback (per-clip toggle, play/pause, scrub)
+- Material inspector (textures, roughness/metalness)
+- Mesh-structure tree, click-synced with viewer picking
+- Capture: export the view as a PNG with adjustable light/shadow and optional
+  transparent background
+
+**Optimize** (non-destructive — the original bytes are never mutated)
+- Prune unused data + dedup
+- Texture downscale — bulk (max resolution) or per-texture, incl. per-texture
+  deletion
+- Polygon reduction via `meshoptimizer` simplify (off by default)
+- Auto Before/After estimate; the 3D view reflects the result
+- One-click save of the optimized `.glb` (copyright metadata is preserved)
+
+Upload by clicking the dropzone or dragging a `.glb` onto the viewer area.
+
+## Architecture
+
+- **Next.js App Router** with two route groups: `app/(v2)` (`/`) and
+  `app/(legacy)` (`/legacy`). The two are fully decoupled — an ESLint
+  `import/no-restricted-paths` rule forbids cross-imports so either can be
+  removed independently.
+- **3D layer**: plain `three.js` behind thin hooks (`useThreeStage`); no
+  react-three-fiber.
+- **Optimization**: `@gltf-transform/core` + `functions` run inside a **Web
+  Worker** (`app/(v2)/pipeline/`) so the UI thread never blocks. The pipeline is
+  non-destructive: the original `ArrayBuffer` is immutable and every run
+  produces fresh bytes.
+- **State**: Zustand (`modelStore` / `optimizeStore` / `uiStore`). `uiStore`
+  (mode / theme / locale) is persisted to `localStorage`. Legacy still uses
+  Recoil.
+- **Styling**: CSS Modules (SCSS) + CSS custom properties for theme tokens.
+- **i18n**: lightweight in-house dictionary (`app/(v2)/i18n/`). Locale is
+  auto-detected from the browser on first visit, then persisted; a header switch
+  toggles JA/EN. `en.ts` is typed against the `ja.ts` source, so a missing key
+  is a compile error.
+- **Analytics**: GA4 via `@next/third-parties` (see below). Only anonymous usage
+  events are sent — never model bytes, content, or filenames.
 
 ## Getting Started
 
-First, run the development server:
-
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) (v2). The legacy app is at
+[http://localhost:3000/legacy](http://localhost:3000/legacy).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Environment variables
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+Copy `.env.example` to `.env.local` and fill in what you need.
 
-## Mesh Structure
+| Variable | Purpose |
+| --- | --- |
+| `NEXT_PUBLIC_GA_MEASUREMENT_ID` | GA4 measurement ID. When unset, GA is not loaded and nothing is sent (local/test builds stay silent). Set it in production to enable `page_view` (`/` and `/legacy`) + v2 custom interaction events. |
 
-The left sidebar always shows a `Mesh Structure` section listing the scene graph of the loaded glTF/GLB. The tree starts fully collapsed; expand a node manually via its caret to walk the hierarchy. Selecting a node in the tree highlights the corresponding mesh in the viewer with an outline. Each mesh node lists the materials it uses; clicking a material chip selects that material in the `Materials` section, opening its property sliders. The two sections stay in sync in both directions.
+Custom-event parameters must be registered as custom dimensions/metrics in the
+GA4 property to appear in reports.
 
-Just under the section heading, a `Click viewer to select` checkbox toggles a viewer-side picking mode. While enabled, clicking a mesh directly in the 3D scene selects it. The tree automatically expands the ancestor path so that the picked mesh becomes visible and highlighted. Press `ESC` to disable the picking mode. Selection from the sidebar tree works independently and does not require the toggle.
+## Scripts
+
+```bash
+npm run dev    # dev server
+npm run build  # production build
+npm start      # serve the production build
+npm run lint   # ESLint (incl. the legacy/v2 decoupling guard)
+npm test       # Vitest suite (once)
+npm run test:watch
+```
 
 ## Testing
 
-Tests run on Vitest with Testing Library and jsdom.
-
-```bash
-npm test          # run the suite once
-npm run test:watch # re-run on file changes
-```
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+Tests run on Vitest with Testing Library and jsdom. CI (`.github/workflows/ci.yml`)
+runs lint, tests, and build on every pull request.
