@@ -17,10 +17,31 @@ export function AppShell({
   fontClassName: string;
 }) {
   const theme = useUiStore((state) => state.theme);
+  const locale = useUiStore((state) => state.locale);
 
   useEffect(() => {
-    void useUiStore.persist.rehydrate();
+    // Detect the browser language on the first visit (no locale stored yet),
+    // then rehydrate any explicitly chosen locale/mode/theme over it.
+    let storedLocale: unknown;
+    try {
+      const raw = localStorage.getItem("gltf-light-v2-ui");
+      storedLocale = raw ? JSON.parse(raw)?.state?.locale : undefined;
+    } catch {
+      storedLocale = undefined;
+    }
+    void useUiStore.persist.rehydrate()?.then(() => {
+      if (!storedLocale) {
+        useUiStore
+          .getState()
+          .setLocale(navigator.language.toLowerCase().startsWith("ja") ? "ja" : "en");
+      }
+    });
   }, []);
+
+  // Keep <html lang> in sync with the chosen locale (legacy stays "en").
+  useEffect(() => {
+    document.documentElement.lang = locale;
+  }, [locale]);
 
   return (
     <div data-app="v2" data-theme={theme} className={fontClassName}>

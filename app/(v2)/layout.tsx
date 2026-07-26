@@ -12,9 +12,11 @@ const brandFont = Space_Grotesk({
   display: "swap",
 });
 
+// Metadata is rendered on the server and can't read the client-persisted
+// locale, so it stays in English (per-locale metadata would need URL routing).
 export const metadata: Metadata = {
   title: "gltf-light",
-  description: "オフラインでglbのプレビューと軽量化を",
+  description: "Preview & optimize glb, offline",
 };
 
 export default function V2Layout({

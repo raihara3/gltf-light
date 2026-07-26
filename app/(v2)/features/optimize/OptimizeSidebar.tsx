@@ -1,6 +1,7 @@
 "use client";
 
 import type { StageController } from "../../viewer/useThreeStage";
+import { useTranslations } from "../../i18n/useTranslations";
 import { useOptimizePipeline } from "./useOptimizePipeline";
 import { PruneDedupCard } from "./PruneDedupCard";
 import { TextureOptimizeCard } from "./TextureOptimizeCard";
@@ -15,10 +16,11 @@ import styles from "./OptimizeSidebar.module.scss";
  */
 export function OptimizeSidebar({ stage }: { stage: StageController }) {
   useOptimizePipeline();
+  const t = useTranslations();
 
   return (
     <div className={styles.sidebar}>
-      <h2 className={styles.heading}>軽量化の設定はカスタマイズが可能です</h2>
+      <h2 className={styles.heading}>{t("optimize.heading")}</h2>
       <PruneDedupCard />
       <TextureOptimizeCard stage={stage} />
       <PolygonReduceCard stage={stage} />

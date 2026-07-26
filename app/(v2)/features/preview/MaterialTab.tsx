@@ -5,6 +5,7 @@ import type { StageController } from "../../viewer/useThreeStage";
 import { useUiStore } from "../../store/uiStore";
 import { formatFileSize } from "../../lib/formatFileSize";
 import { analytics } from "../../lib/analytics";
+import { useTranslations } from "../../i18n/useTranslations";
 import { SphereIcon, ZapIcon, ArrowRightIcon } from "../../icons";
 import { TabCard } from "./TabCard";
 import styles from "./MaterialTab.module.scss";
@@ -31,6 +32,7 @@ function ValueBar({ label, value }: { label: string; value: number }) {
 export function MaterialTab({ stage }: { stage: StageController }) {
   const [openIds, setOpenIds] = useState<Set<string>>(new Set());
   const setMode = useUiStore((state) => state.setMode);
+  const t = useTranslations();
 
   const toggle = (id: string) =>
     setOpenIds((prev) => {
@@ -44,7 +46,7 @@ export function MaterialTab({ stage }: { stage: StageController }) {
     });
 
   return (
-    <TabCard Icon={SphereIcon} title="マテリアル">
+    <TabCard Icon={SphereIcon} title={t("tabs.material")}>
       <ul className={styles.list}>
         {stage.materials.map((material) => {
           const open = openIds.has(material.id);
@@ -65,7 +67,7 @@ export function MaterialTab({ stage }: { stage: StageController }) {
                 <div className={styles.details}>
                   {material.textures.length > 0 && (
                     <div className={styles.textureBlock}>
-                      <span className={styles.textureHeading}>テクスチャ</span>
+                      <span className={styles.textureHeading}>{t("material.textures")}</span>
                       {material.textures.map((texture, index) => (
                         <div key={`${texture.type}-${index}`} className={styles.texture}>
                           {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -86,8 +88,8 @@ export function MaterialTab({ stage }: { stage: StageController }) {
                       ))}
                     </div>
                   )}
-                  <ValueBar label="粗さ (Roughness)" value={material.roughness} />
-                  <ValueBar label="金属感 (Metalness)" value={material.metalness} />
+                  <ValueBar label={t("material.roughness")} value={material.roughness} />
+                  <ValueBar label={t("material.metalness")} value={material.metalness} />
                 </div>
               )}
             </li>
@@ -104,7 +106,7 @@ export function MaterialTab({ stage }: { stage: StageController }) {
         }}
       >
         <ZapIcon size={16} />
-        <span className={styles.ctaLabel}>マテリアルの最適化をする</span>
+        <span className={styles.ctaLabel}>{t("material.optimizeCta")}</span>
         <ArrowRightIcon size={16} />
       </button>
     </TabCard>

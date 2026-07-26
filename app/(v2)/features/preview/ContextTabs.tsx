@@ -3,6 +3,8 @@
 import { useMemo, useState } from "react";
 import type { StageController } from "../../viewer/useThreeStage";
 import { FilmIcon, SphereIcon, LayersIcon, type IconProps } from "../../icons";
+import { useTranslations } from "../../i18n/useTranslations";
+import type { MessageKey } from "../../i18n/ja";
 import { AnimationTab } from "./AnimationTab";
 import { MaterialTab } from "./MaterialTab";
 import { MeshTab } from "./MeshTab";
@@ -10,15 +12,16 @@ import styles from "./ContextTabs.module.scss";
 
 type TabKey = "animation" | "material" | "mesh";
 
-const TABS: { key: TabKey; label: string; Icon: (props: IconProps) => React.ReactElement }[] = [
-  { key: "animation", label: "アニメーション", Icon: FilmIcon },
-  { key: "material", label: "マテリアル", Icon: SphereIcon },
-  { key: "mesh", label: "メッシュ", Icon: LayersIcon },
+const TABS: { key: TabKey; labelKey: MessageKey; Icon: (props: IconProps) => React.ReactElement }[] = [
+  { key: "animation", labelKey: "tabs.animation", Icon: FilmIcon },
+  { key: "material", labelKey: "tabs.material", Icon: SphereIcon },
+  { key: "mesh", labelKey: "tabs.mesh", Icon: LayersIcon },
 ];
 
 /** Contextual preview tabs (Figma preview screen): animation / material / mesh.
  *  Empty tabs are disabled (F-13). */
 export function ContextTabs({ stage }: { stage: StageController }) {
+  const t = useTranslations();
   const counts: Record<TabKey, number> = {
     animation: stage.animations.length,
     material: stage.materials.length,
@@ -35,8 +38,8 @@ export function ContextTabs({ stage }: { stage: StageController }) {
 
   return (
     <div className={styles.container}>
-      <div className={styles.tabs} role="tablist" aria-label="プレビュー情報">
-        {TABS.map(({ key, label, Icon }) => {
+      <div className={styles.tabs} role="tablist" aria-label={t("tabs.label")}>
+        {TABS.map(({ key, labelKey, Icon }) => {
           const disabled = counts[key] === 0;
           const isActive = activeKey === key;
           return (
@@ -50,7 +53,7 @@ export function ContextTabs({ stage }: { stage: StageController }) {
               onClick={() => setActive(key)}
             >
               <Icon size={16} />
-              {label}
+              {t(labelKey)}
             </button>
           );
         })}

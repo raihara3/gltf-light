@@ -2,6 +2,7 @@
 
 import { useOptimizeStore } from "../../store/optimizeStore";
 import { Switch } from "../../components/ui/Switch";
+import { useTranslations } from "../../i18n/useTranslations";
 import { TrashIcon } from "../../icons";
 import styles from "./OptimizeCard.module.scss";
 
@@ -11,6 +12,7 @@ export function PruneDedupCard() {
   const setSettings = useOptimizeStore((state) => state.setSettings);
   const status = useOptimizeStore((state) => state.status);
   const unusedRemoved = useOptimizeStore((state) => state.result?.stats?.unusedRemoved);
+  const t = useTranslations();
 
   return (
     <div className={styles.card}>
@@ -18,17 +20,17 @@ export function PruneDedupCard() {
         <span className={styles.icon}>
           <TrashIcon size={14} />
         </span>
-        <span className={styles.label}>未使用データの削除</span>
+        <span className={styles.label}>{t("prune.label")}</span>
         <Switch
           checked={enabled}
           onChange={(checked) => setSettings({ pruneDedup: checked })}
-          label="未使用データの削除"
+          label={t("prune.label")}
         />
       </div>
-      <p className={styles.text}>使われていないデータを削除して軽量化します。</p>
+      <p className={styles.text}>{t("prune.text")}</p>
       <div className={styles.dataArea}>
         <div className={styles.data}>
-          <span className={styles.dataLabel}>未使用データ</span>
+          <span className={styles.dataLabel}>{t("prune.dataLabel")}</span>
           <span className={styles.dataValue}>
             {status === "estimating" ? "…" : (unusedRemoved ?? 0).toLocaleString()}
           </span>

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import type { StageController, MeshNode } from "../../viewer/useThreeStage";
 import { useUiStore } from "../../store/uiStore";
+import { useTranslations } from "../../i18n/useTranslations";
 import { LayersIcon, CubeIcon, CheckIcon, ZapIcon, ArrowRightIcon } from "../../icons";
 import { TabCard } from "./TabCard";
 import styles from "./MeshTab.module.scss";
@@ -25,6 +26,7 @@ function flatten(node: MeshNode, collapsed: Set<string>, depth = 0, acc: FlatRow
 export function MeshTab({ stage }: { stage: StageController }) {
   const { meshTree, selectedUuid, selectMesh, pickingEnabled, setPickingEnabled } = stage;
   const setMode = useUiStore((state) => state.setMode);
+  const t = useTranslations();
   const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
 
   const rows = meshTree ? flatten(meshTree, collapsed) : [];
@@ -41,7 +43,7 @@ export function MeshTab({ stage }: { stage: StageController }) {
     });
 
   return (
-    <TabCard Icon={LayersIcon} title="メッシュ構造">
+    <TabCard Icon={LayersIcon} title={t("mesh.title")}>
       <button
         type="button"
         className={styles.pickToggle}
@@ -51,7 +53,7 @@ export function MeshTab({ stage }: { stage: StageController }) {
         <span className={`${styles.check} ${pickingEnabled ? styles.checkOn : ""}`} aria-hidden="true">
           {pickingEnabled && <CheckIcon size={9} />}
         </span>
-        <span className={styles.pickLabel}>右のビューアーでクリックしてメッシュを選択する</span>
+        <span className={styles.pickLabel}>{t("mesh.pickHint")}</span>
       </button>
 
       <div className={styles.treeWrap}>
@@ -75,7 +77,7 @@ export function MeshTab({ stage }: { stage: StageController }) {
                     type="button"
                     className={styles.toggle}
                     onClick={() => toggleCollapse(node.uuid)}
-                    aria-label={open ? "折りたたむ" : "展開する"}
+                    aria-label={open ? t("mesh.collapse") : t("mesh.expand")}
                   >
                     {open ? "▾" : "▸"}
                   </button>
@@ -98,7 +100,7 @@ export function MeshTab({ stage }: { stage: StageController }) {
 
       <button type="button" className={styles.cta} onClick={() => setMode("optimize")}>
         <ZapIcon size={16} />
-        <span className={styles.ctaLabel}>ポリゴンの最適化をする</span>
+        <span className={styles.ctaLabel}>{t("mesh.optimizeCta")}</span>
         <ArrowRightIcon size={16} />
       </button>
     </TabCard>
