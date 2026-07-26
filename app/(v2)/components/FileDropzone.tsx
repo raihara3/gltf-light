@@ -26,11 +26,14 @@ export function FileDropzone({ variant = "panel" }: FileDropzoneProps) {
         onClick={() => inputRef.current?.click()}
         onDragOver={(event) => {
           event.preventDefault();
+          event.stopPropagation();
           setIsDragging(true);
         }}
         onDragLeave={() => setIsDragging(false)}
         onDrop={(event) => {
           event.preventDefault();
+          // Handle here; don't also trigger the viewer-area drop target.
+          event.stopPropagation();
           setIsDragging(false);
           void acceptFiles(event.dataTransfer.files);
         }}

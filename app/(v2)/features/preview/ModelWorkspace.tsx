@@ -3,6 +3,7 @@
 import { useModelStore } from "../../store/modelStore";
 import { useUiStore } from "../../store/uiStore";
 import { useOptimizeStore } from "../../store/optimizeStore";
+import { useViewerDrop } from "../../hooks/useViewerDrop";
 import { useThreeStage } from "../../viewer/useThreeStage";
 import { Stage } from "../../viewer/Stage";
 import { FileDropzone } from "../../components/FileDropzone";
@@ -24,6 +25,7 @@ export function ModelWorkspace() {
   // result"); everywhere else render the original.
   const displayBytes = mode === "optimize" && resultBytes ? resultBytes : bytes;
   const stage = useThreeStage(displayBytes, bytes);
+  const { isDragging, dropProps } = useViewerDrop();
 
   return (
     <>
@@ -40,7 +42,7 @@ export function ModelWorkspace() {
           </>
         )}
       </aside>
-      <section className={styles.viewer} aria-label="3Dビュー">
+      <section className={styles.viewer} aria-label="3Dビュー" {...dropProps}>
         <Stage
           containerRef={stage.containerRef}
           onPointerDown={stage.onPointerDown}
@@ -51,6 +53,7 @@ export function ModelWorkspace() {
           onResetView={stage.resetView}
         />
         <Copyright />
+        {isDragging && <div className={styles.dropOverlay}>ここに .glb をドロップして差し替え</div>}
       </section>
     </>
   );

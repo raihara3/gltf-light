@@ -30,9 +30,11 @@
   transition: border-color 0.15s ease, background-color 0.15s ease;
 
   &:hover,
+  &:focus-visible,
   &.dragging {
     border-color: var(--color-highlight);
-    background: var(--color-bg);
+    background: var(--color-highlight-soft);
+    outline: none;
   }
 }
 
