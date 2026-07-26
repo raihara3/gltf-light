@@ -1,6 +1,7 @@
 "use client";
 
 import { useModelStore } from "./store/modelStore";
+import { useViewerDrop } from "./hooks/useViewerDrop";
 import { Header } from "./components/Header";
 import { ServiceInfo } from "./components/ServiceInfo";
 import { FileDropzone } from "./components/FileDropzone";
@@ -15,6 +16,7 @@ import styles from "./styles/page.module.scss";
  */
 export default function V2Page() {
   const hasModel = useModelStore((state) => state.originalBytes !== null);
+  const { isDragging, dropProps } = useViewerDrop();
 
   return (
     <>
@@ -28,11 +30,12 @@ export default function V2Page() {
               <ServiceInfo />
               <LegacyLink />
             </aside>
-            <section className={styles.viewer} aria-label="3Dビュー">
+            <section className={styles.viewer} aria-label="3Dビュー" {...dropProps}>
               <div className={styles.viewerBody}>
                 <FileDropzone variant="hero" />
               </div>
               <Copyright />
+              {isDragging && <div className={styles.dropOverlay}>ここに .glb をドロップ</div>}
             </section>
           </>
         )}
