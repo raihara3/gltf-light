@@ -1,0 +1,26 @@
+.track {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-start;
+  flex-shrink: 0;
+  width: 36px;
+  height: 20px;
+  padding: 2px;
+  border: none;
+  border-radius: var(--radius-pill);
+  background: var(--color-border-2);
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.on {
+  justify-content: flex-end;
+  background: var(--color-accent);
+}
+
+.knob {
+  width: 16px;
+  height: 16px;
+  border-radius: var(--radius-pill);
+  background: #ffffff;
+}

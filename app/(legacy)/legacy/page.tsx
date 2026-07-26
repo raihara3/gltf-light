@@ -1,21 +1,17 @@
 "use client";
 
 // lib
-import { RecoilRoot } from "recoil";
 import { Analytics } from "@vercel/analytics/react";
 
-// style
-import "./styles/global.scss";
-
 // components
-import TwoColumn from "./layouts/TwoColumn";
-import Header from "./components/Header";
-import Sidebar from "./layouts/Sidebar";
-import MainContent from "./layouts/MainContent";
+import TwoColumn from "../layouts/TwoColumn";
+import Header from "../components/Header";
+import Sidebar from "../layouts/Sidebar";
+import MainContent from "../layouts/MainContent";
 
 export default function Home() {
   return (
-    <RecoilRoot>
+    <>
       <Header />
       <TwoColumn
         className="box-border wrapper"
@@ -23,6 +19,6 @@ export default function Home() {
         right={<MainContent />}
       />
       <Analytics />
-    </RecoilRoot>
+    </>
   );
 }
