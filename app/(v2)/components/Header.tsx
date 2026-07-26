@@ -1,5 +1,6 @@
 "use client";
 
+import { useModelStore } from "../store/modelStore";
 import { useUiStore, type Mode } from "../store/uiStore";
 import {
   RocketIcon,
@@ -17,6 +18,7 @@ const MODE_TABS: { value: Mode; label: string; Icon: (props: IconProps) => React
 ];
 
 export function Header() {
+  const hasModel = useModelStore((state) => state.originalBytes !== null);
   const mode = useUiStore((state) => state.mode);
   const setMode = useUiStore((state) => state.setMode);
   const theme = useUiStore((state) => state.theme);
@@ -34,25 +36,28 @@ export function Header() {
         </span>
       </div>
 
+      {/* Mode tabs only make sense once a model is loaded. */}
       <div className={styles.center}>
-        <div className={styles.modeTabs} role="tablist" aria-label="表示モード">
-          {MODE_TABS.map(({ value, label, Icon }) => {
-            const isActive = mode === value;
-            return (
-              <button
-                key={value}
-                type="button"
-                role="tab"
-                aria-selected={isActive}
-                className={`${styles.modeTab} ${isActive ? styles.modeTabActive : ""}`}
-                onClick={() => setMode(value)}
-              >
-                <Icon size={14} />
-                {label}
-              </button>
-            );
-          })}
-        </div>
+        {hasModel && (
+          <div className={styles.modeTabs} role="tablist" aria-label="表示モード">
+            {MODE_TABS.map(({ value, label, Icon }) => {
+              const isActive = mode === value;
+              return (
+                <button
+                  key={value}
+                  type="button"
+                  role="tab"
+                  aria-selected={isActive}
+                  className={`${styles.modeTab} ${isActive ? styles.modeTabActive : ""}`}
+                  onClick={() => setMode(value)}
+                >
+                  <Icon size={14} />
+                  {label}
+                </button>
+              );
+            })}
+          </div>
+        )}
       </div>
 
       <div className={styles.right}>
@@ -64,9 +69,6 @@ export function Header() {
         >
           {theme === "light" ? <MoonIcon size={16} /> : <SunIcon size={16} />}
         </button>
-        <span className={styles.meta}>
-          <span className={styles.version}>v2.0</span>
-        </span>
       </div>
     </header>
   );

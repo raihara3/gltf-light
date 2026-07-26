@@ -116,15 +116,3 @@
     background: var(--color-track);
   }
 }
-
-.meta {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  color: var(--color-text-faint);
-}
-
-.version {
-  font-size: var(--font-size-11);
-  line-height: 14px;
-}
