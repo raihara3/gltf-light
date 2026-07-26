@@ -12,6 +12,9 @@ import { parseGlbTextureSizes, type MaterialTextureSizes } from "../lib/glbTextu
 
 const OUTLINE_COLOR = "#2f6bff"; // v2 highlight (electric blue)
 const CLICK_DRAG_THRESHOLD = 4; // px — distinguishes a pick from an orbit drag
+const DEFAULT_AMBIENT = 0.5;
+const DEFAULT_DIRECTIONAL = 0.5;
+const DEFAULT_SHADOW_OPACITY = 0.3;
 
 export interface StageAnimation {
   name: string;
@@ -172,6 +175,9 @@ interface StageRefs {
   clips: Map<string, THREE.AnimationClip>;
   materials: Map<string, THREE.Material>;
   objectsByUuid: Map<string, THREE.Object3D>;
+  ambientLight: THREE.AmbientLight;
+  directionalLight: THREE.DirectionalLight;
+  ground: THREE.Mesh;
 }
 
 /**
@@ -203,6 +209,10 @@ export function useThreeStage(displayBytes: ArrayBuffer | null, sourceBytes: Arr
   const [pickingEnabled, setPickingEnabled] = useState(true);
   const pickingEnabledRef = useRef(true);
   const [hasSkin, setHasSkin] = useState(false);
+  const [ambientIntensity, setAmbientIntensityState] = useState(DEFAULT_AMBIENT);
+  const [directionalIntensity, setDirectionalIntensityState] = useState(DEFAULT_DIRECTIONAL);
+  const [shadowEnabled, setShadowEnabledState] = useState(false);
+  const [shadowOpacity, setShadowOpacityState] = useState(DEFAULT_SHADOW_OPACITY);
 
   // Keep refs in sync so the render loop can gate the mixer without re-running.
   useEffect(() => {
@@ -254,13 +264,36 @@ export function useThreeStage(displayBytes: ArrayBuffer | null, sourceBytes: Arr
     renderer.toneMappingExposure = 1;
     container.appendChild(renderer.domElement);
 
+    renderer.shadowMap.enabled = false; // toggled on via the capture panel
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
     const pmrem = new THREE.PMREMGenerator(renderer);
     scene.environment = pmrem.fromScene(new RoomEnvironment()).texture;
 
-    scene.add(new THREE.AmbientLight(0xffffff, 0.5));
-    const directional = new THREE.DirectionalLight(0xffffff, 0.5);
+    const ambientLight = new THREE.AmbientLight(0xffffff, DEFAULT_AMBIENT);
+    scene.add(ambientLight);
+    const directional = new THREE.DirectionalLight(0xffffff, DEFAULT_DIRECTIONAL);
     directional.position.set(5, 5, 5);
+    directional.castShadow = false;
+    directional.shadow.mapSize.set(2048, 2048);
+    directional.shadow.camera.near = 0.1;
+    directional.shadow.camera.far = 50;
+    directional.shadow.camera.left = -10;
+    directional.shadow.camera.right = 10;
+    directional.shadow.camera.top = 10;
+    directional.shadow.camera.bottom = -10;
     scene.add(directional);
+
+    // Shadow catcher: a large ground plane that only renders received shadows.
+    // Hidden until shadows are enabled; repositioned under each loaded model.
+    const ground = new THREE.Mesh(
+      new THREE.PlaneGeometry(100, 100),
+      new THREE.ShadowMaterial({ opacity: DEFAULT_SHADOW_OPACITY })
+    );
+    ground.rotation.x = -Math.PI / 2;
+    ground.receiveShadow = true;
+    ground.visible = false;
+    scene.add(ground);
 
     const controls = new OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
@@ -290,6 +323,9 @@ export function useThreeStage(displayBytes: ArrayBuffer | null, sourceBytes: Arr
       clips: new Map(),
       materials: new Map(),
       objectsByUuid: new Map(),
+      ambientLight,
+      directionalLight: directional,
+      ground,
     };
 
     let raf = 0;
@@ -373,9 +409,21 @@ export function useThreeStage(displayBytes: ArrayBuffer | null, sourceBytes: Arr
         stage.scene.add(model);
         stage.model = model;
 
-        // Index objects for tree ↔ viewer selection.
+        // Index objects for tree ↔ viewer selection; let meshes cast/receive
+        // shadows so the shadow toggle (capture panel) works without a reload.
         stage.objectsByUuid = new Map();
-        model.traverse((object) => stage.objectsByUuid.set(object.uuid, object));
+        model.traverse((object) => {
+          stage.objectsByUuid.set(object.uuid, object);
+          const mesh = object as THREE.Mesh;
+          if (mesh.isMesh) {
+            mesh.castShadow = true;
+            mesh.receiveShadow = true;
+          }
+        });
+
+        // Sit the shadow-catching ground at the model's base.
+        const groundBox = new THREE.Box3().setFromObject(model);
+        stage.ground.position.y = groundBox.min.y;
 
         // Extract preview data only from the source (original) model — never
         // from an optimized reflection, so modelStore.meta keeps the "before"
@@ -573,6 +621,90 @@ export function useThreeStage(displayBytes: ArrayBuffer | null, sourceBytes: Arr
     });
   }, []);
 
+  // ── Capture: light / shadow settings + PNG export ────────────────────────
+  const setAmbientIntensity = useCallback((value: number) => {
+    setAmbientIntensityState(value);
+    const stage = refs.current;
+    if (stage) {
+      stage.ambientLight.intensity = value;
+    }
+  }, []);
+
+  const setDirectionalIntensity = useCallback((value: number) => {
+    setDirectionalIntensityState(value);
+    const stage = refs.current;
+    if (stage) {
+      stage.directionalLight.intensity = value;
+    }
+  }, []);
+
+  const setShadowEnabled = useCallback((enabled: boolean) => {
+    setShadowEnabledState(enabled);
+    const stage = refs.current;
+    if (!stage) {
+      return;
+    }
+    stage.renderer.shadowMap.enabled = enabled;
+    stage.directionalLight.castShadow = enabled;
+    stage.ground.visible = enabled;
+    // Materials must recompile when the shadow map is toggled on/off.
+    stage.model?.traverse((object) => {
+      const mesh = object as THREE.Mesh;
+      const materials = Array.isArray(mesh.material) ? mesh.material : mesh.material ? [mesh.material] : [];
+      materials.forEach((material) => (material.needsUpdate = true));
+    });
+  }, []);
+
+  const setShadowOpacity = useCallback((value: number) => {
+    setShadowOpacityState(value);
+    const stage = refs.current;
+    if (stage) {
+      (stage.ground.material as THREE.ShadowMaterial).opacity = value;
+    }
+  }, []);
+
+  const capture = useCallback((options: { transparent: boolean }) => {
+    const stage = refs.current;
+    const container = containerRef.current;
+    if (!stage || !container) {
+      return;
+    }
+    // Render a clean frame without the selection outline.
+    const previousSelection = stage.outlinePass.selectedObjects;
+    stage.outlinePass.selectedObjects = [];
+    stage.composer.render();
+    stage.outlinePass.selectedObjects = previousSelection;
+
+    // Composite the (transparent) WebGL canvas onto a 2D canvas so we can add a
+    // solid background when transparency is off.
+    const source = stage.renderer.domElement;
+    const output = document.createElement("canvas");
+    output.width = source.width;
+    output.height = source.height;
+    const context = output.getContext("2d");
+    if (!context) {
+      return;
+    }
+    if (!options.transparent) {
+      const viewerBg = getComputedStyle(container).getPropertyValue("--color-viewer-bg").trim();
+      context.fillStyle = viewerBg || "#ffffff";
+      context.fillRect(0, 0, output.width, output.height);
+    }
+    context.drawImage(source, 0, 0);
+
+    output.toBlob((blob) => {
+      if (!blob) {
+        return;
+      }
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = "capture.png";
+      link.click();
+      URL.revokeObjectURL(url);
+    }, "image/png");
+  }, []);
+
   const resetView = useCallback(() => {
     const stage = refs.current;
     if (!stage || !stage.model) {
@@ -611,6 +743,15 @@ export function useThreeStage(displayBytes: ArrayBuffer | null, sourceBytes: Arr
     hasSkin,
     setWireframe,
     resetView,
+    ambientIntensity,
+    setAmbientIntensity,
+    directionalIntensity,
+    setDirectionalIntensity,
+    shadowEnabled,
+    setShadowEnabled,
+    shadowOpacity,
+    setShadowOpacity,
+    capture,
   };
 }
 
