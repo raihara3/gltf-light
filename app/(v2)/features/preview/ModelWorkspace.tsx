@@ -6,6 +6,7 @@ import { useOptimizeStore } from "../../store/optimizeStore";
 import { useViewerDrop } from "../../hooks/useViewerDrop";
 import { useThreeStage } from "../../viewer/useThreeStage";
 import { Stage } from "../../viewer/Stage";
+import { CapturePanel } from "../../viewer/CapturePanel";
 import { FileDropzone } from "../../components/FileDropzone";
 import { Copyright } from "../../components/Copyright";
 import { LegacyLink } from "../../components/LegacyLink";
@@ -53,6 +54,7 @@ export function ModelWorkspace() {
           onResetView={stage.resetView}
         />
         <Copyright />
+        {mode === "preview" && <CapturePanel stage={stage} />}
         {isDragging && <div className={styles.dropOverlay}>ここに .glb をドロップして差し替え</div>}
       </section>
     </>
