@@ -1,3 +1,22 @@
 {
-  "extends": "next/core-web-vitals"
+  "extends": "next/core-web-vitals",
+  "rules": {
+    "import/no-restricted-paths": [
+      "error",
+      {
+        "zones": [
+          {
+            "target": "./app/(v2)",
+            "from": "./app/(legacy)",
+            "message": "v2 code must not import legacy code. Keep the two versions fully decoupled (copy shared logic into v2 instead of importing)."
+          },
+          {
+            "target": "./app/(legacy)",
+            "from": "./app/(v2)",
+            "message": "legacy code must not import v2 code. The legacy app is frozen and must stay independent."
+          }
+        ]
+      }
+    ]
+  }
 }
