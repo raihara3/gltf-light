@@ -397,6 +397,13 @@ export function useThreeStage(displayBytes: ArrayBuffer | null, sourceBytes: Arr
           return;
         }
         const stage = refs.current;
+        // A reflection / mode switch reloads the model but is NOT a fresh
+        // upload; capture the current animation state so it can be preserved
+        // (only a new source resets play state / camera).
+        const isNewSource = sourceBytes !== loadedSourceRef.current;
+        const previousPlaying = isPlayingRef.current;
+        const previousActiveClips = activeClipsRef.current;
+        const previousTime = stage.mixer?.time ?? 0;
         if (stage.model) {
           stage.mixer?.stopAllAction();
           stage.scene.remove(stage.model);
@@ -459,7 +466,7 @@ export function useThreeStage(displayBytes: ArrayBuffer | null, sourceBytes: Arr
 
         // Fit the camera only for a freshly uploaded model — reflections and
         // mode switches keep the current camera.
-        if (sourceBytes !== loadedSourceRef.current) {
+        if (isNewSource) {
           loadedSourceRef.current = sourceBytes;
           const box = new THREE.Box3().setFromObject(model);
           const center = box.getCenter(new THREE.Vector3());
@@ -486,20 +493,33 @@ export function useThreeStage(displayBytes: ArrayBuffer | null, sourceBytes: Arr
             stage.actions.set(clip.name, mixer.clipAction(clip));
             stage.clips.set(clip.name, clip);
           });
-          const first = gltf.animations[0];
-          stage.actions.get(first.name)?.reset().play();
           setAnimations(gltf.animations.map((clip) => ({ name: clip.name, duration: clip.duration })));
-          setActiveClips([first.name]);
-          setDuration(first.duration);
-          setIsPlaying(true);
+
+          // Fresh upload: start the first clip playing. Reflection / mode
+          // switch: keep the user's clips, play/pause state, and position so a
+          // paused preview stays paused after switching tabs.
+          const restored = isNewSource
+            ? []
+            : previousActiveClips.filter((name) => stage.actions.has(name));
+          const active = restored.length > 0 ? restored : [gltf.animations[0].name];
+          active.forEach((name) => stage.actions.get(name)?.reset().play());
+          const playing = isNewSource ? true : previousPlaying;
+          const time = isNewSource ? 0 : previousTime;
+          mixer.setTime(time);
+          setActiveClips(active);
+          setDuration(
+            active.reduce((max, name) => Math.max(max, stage.clips.get(name)?.duration ?? 0), 0)
+          );
+          setIsPlaying(playing);
+          setCurrentTime(time);
         } else {
           stage.mixer = null;
           setAnimations([]);
           setActiveClips([]);
           setDuration(0);
           setIsPlaying(false);
+          setCurrentTime(0);
         }
-        setCurrentTime(0);
       },
       () => {
         // parse error — leave the previous scene untouched
