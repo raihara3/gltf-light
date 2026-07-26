@@ -20,22 +20,28 @@ function Slider({
   value: number;
   onChange: (value: number) => void;
 }) {
+  const trackPct = ((value - min) / (max - min)) * 100;
   return (
-    <label className={styles.slider}>
+    <div className={styles.slider}>
       <span className={styles.sliderHead}>
         <span>{label}</span>
         <span className={styles.value}>{value.toFixed(2)}</span>
       </span>
-      <input
-        type="range"
-        className={styles.range}
-        min={min}
-        max={max}
-        step={step}
-        value={value}
-        onChange={(event) => onChange(Number(event.target.value))}
-      />
-    </label>
+      <div className={styles.bar}>
+        <div className={styles.fill} style={{ width: `${trackPct}%` }} />
+        <span className={styles.knob} style={{ left: `${trackPct}%` }} />
+        <input
+          type="range"
+          className={styles.input}
+          min={min}
+          max={max}
+          step={step}
+          value={value}
+          onChange={(event) => onChange(Number(event.target.value))}
+          aria-label={label}
+        />
+      </div>
+    </div>
   );
 }
 
@@ -78,11 +84,11 @@ export function CapturePanel({ stage }: { stage: StageController }) {
       <button
         type="button"
         className={`${styles.trigger} ${open ? styles.triggerActive : ""}`}
-        aria-label="キャプチャ"
         aria-expanded={open}
         onClick={() => setOpen((previous) => !previous)}
       >
         <CameraIcon size={16} />
+        <span className={styles.triggerLabel}>キャプチャ</span>
       </button>
 
       {open && (

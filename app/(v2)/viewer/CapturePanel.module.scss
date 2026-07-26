@@ -12,14 +12,17 @@
 .trigger {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  width: 32px;
+  gap: var(--space-4);
   height: 32px;
-  padding: 0;
+  padding: 0 var(--space-12);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-pill);
   background: var(--color-surface);
   color: var(--color-text-muted);
+  font-family: inherit;
+  font-weight: 600;
+  font-size: var(--font-size-14);
+  line-height: 18px;
   box-shadow: var(--shadow-sm);
   cursor: pointer;
   transition: color 0.15s ease, background-color 0.15s ease;
@@ -28,6 +31,10 @@
     color: var(--color-text);
     background: var(--color-track);
   }
+}
+
+.triggerLabel {
+  white-space: nowrap;
 }
 
 .triggerActive {
@@ -68,10 +75,11 @@
   color: var(--color-text-faint);
 }
 
+// Slider — matches the design-system pattern used by PolygonReduceCard.
 .slider {
   display: flex;
   flex-direction: column;
-  gap: var(--space-4);
+  gap: var(--space-8);
 }
 
 .sliderHead {
@@ -83,13 +91,55 @@
 }
 
 .value {
+  font-weight: 600;
   color: var(--color-text);
   font-variant-numeric: tabular-nums;
 }
 
-.range {
+.bar {
+  position: relative;
+  display: flex;
+  align-items: center;
+  height: 16px;
+}
+
+.fill {
+  position: absolute;
+  left: 0;
+  height: 6px;
+  border-radius: var(--radius-sm);
+  background: var(--color-highlight);
+}
+
+.bar::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 6px;
+  border-radius: var(--radius-sm);
+  background: var(--color-border);
+}
+
+.knob {
+  position: absolute;
+  z-index: 1;
+  width: 11.2px;
+  height: 11.2px;
+  transform: translateX(-50%);
+  border: 2px solid var(--color-surface);
+  border-radius: var(--radius-pill);
+  background: var(--color-highlight);
+  pointer-events: none;
+}
+
+.input {
+  position: absolute;
+  left: 0;
   width: 100%;
-  accent-color: var(--color-accent);
+  height: 16px;
+  margin: 0;
+  opacity: 0;
   cursor: pointer;
 }
 
