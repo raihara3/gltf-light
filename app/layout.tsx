@@ -1,6 +1,7 @@
 // lib
 import type { Metadata } from "next";
 import { Sometype_Mono } from "next/font/google";
+import { Analytics } from "./Analytics";
 
 const sometypeMono = Sometype_Mono({
   subsets: ["latin"],
@@ -20,6 +21,7 @@ export default function RootLayout({
   return (
     <html lang="en" className={sometypeMono.variable}>
       <body>{children}</body>
+      <Analytics />
     </html>
   );
 }

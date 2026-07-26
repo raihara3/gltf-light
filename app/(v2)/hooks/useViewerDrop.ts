@@ -32,7 +32,7 @@ export function useViewerDrop() {
     (event: React.DragEvent) => {
       event.preventDefault();
       setIsDragging(false);
-      void acceptFiles(event.dataTransfer.files);
+      void acceptFiles(event.dataTransfer.files, "drop");
     },
     [acceptFiles]
   );

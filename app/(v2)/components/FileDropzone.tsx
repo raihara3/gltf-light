@@ -35,7 +35,7 @@ export function FileDropzone({ variant = "panel" }: FileDropzoneProps) {
           // Handle here; don't also trigger the viewer-area drop target.
           event.stopPropagation();
           setIsDragging(false);
-          void acceptFiles(event.dataTransfer.files);
+          void acceptFiles(event.dataTransfer.files, "drop");
         }}
       >
         <input
@@ -43,7 +43,7 @@ export function FileDropzone({ variant = "panel" }: FileDropzoneProps) {
           type="file"
           accept=".glb"
           hidden
-          onChange={(event) => void acceptFiles(event.target.files)}
+          onChange={(event) => void acceptFiles(event.target.files, "click")}
         />
         <span className={styles.icon}>
           <UploadIcon size={24} />

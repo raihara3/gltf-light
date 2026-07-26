@@ -3,7 +3,10 @@
 import { useModelStore } from "../../store/modelStore";
 import { useOptimizeStore } from "../../store/optimizeStore";
 import { formatFileSize } from "../../lib/formatFileSize";
+import { analytics } from "../../lib/analytics";
 import { DownloadIcon } from "../../icons";
+
+const bytesToMb = (bytes: number) => +(bytes / 1024 / 1024).toFixed(2);
 import styles from "./BeforeAfterSummary.module.scss";
 
 /** Turn "test2.glb" into "test2_optimized.glb". */
@@ -23,6 +26,7 @@ export function BeforeAfterSummary() {
   const status = useOptimizeStore((state) => state.status);
   const estimate = useOptimizeStore((state) => state.estimate);
   const resultBytes = useOptimizeStore((state) => state.result?.bytes);
+  const settings = useOptimizeStore((state) => state.settings);
 
   const ready = status === "ready" && estimate != null;
 
@@ -37,6 +41,18 @@ export function BeforeAfterSummary() {
     link.download = optimizedName(name);
     link.click();
     URL.revokeObjectURL(url);
+
+    // Capture the export: reduction achieved + which settings were enabled.
+    analytics.modelExport({
+      reduction_pct: estimate?.deltaPct ?? 0,
+      before_mb: bytesToMb(originalSize),
+      after_mb: bytesToMb(estimate?.afterBytes ?? 0),
+      prune_dedup: settings.pruneDedup,
+      texture_optimize: settings.textureMaxSize !== "off",
+      texture_per_texture: settings.perTexture,
+      polygon_reduce: settings.reduce.enabled,
+      texture_delete_count: settings.deletedTextures.length,
+    });
   };
 
   return (
