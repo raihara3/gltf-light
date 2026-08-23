@@ -46,6 +46,16 @@ Do not start an issue until the previous one is accepted, unless the user explic
 - Copyright is hidden in the v2 UI, but must be preserved in saved glb metadata.
 - Client-side processing only. Input format is `.glb` only.
 
+## Design fidelity (Figma)
+
+The v2 UI must match the approved Figma design exactly. Repeated rework has come from eyeballing screenshots instead of measuring the source.
+
+- Before implementing or QA'ing a design issue, open the target node with Figma MCP (`get_design_context` / `get_metadata`) and measure per element: color, radius, border, padding, size, icon. A screenshot alone is not enough to implement or verify.
+- Reuse existing design tokens (`tokens.scss`) and existing components. Never invent one-off styles, sizes, or copy — the polygon-reduction range input is the canonical slider, and warning text/emphasis must follow the Figma definition (do not strengthen it).
+- If Figma MCP is rate-limited or the plan is unavailable, ask the user for a screenshot or the exact values before starting, and note it in the report.
+
+Approved v2 Figma: https://www.figma.com/design/4lzQj8bhIiKhEpUoymDaQI/gltf-light
+
 ## References
 
 - PRD: `~/.ai-organization/workspace/gltf-light/PRD.md`
